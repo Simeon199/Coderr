@@ -1,7 +1,9 @@
-from .serializers import RegistrationSerializer
+from .serializers import RegistrationSerializer, AuthTokenSerializer
 from django.contrib.auth.models import User
 from rest_framework.permissions import AllowAny
 from rest_framework.authtoken.models import Token
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from rest_framework import generics, status
 
 def get_token_response(user):
@@ -24,3 +26,14 @@ class RegistrationView(generics.CreateAPIView):
         user = serializer.save()
         data = get_token_response(user)
         return Response(data, status=201)
+    
+class LoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = AuthTokenSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.validated_data['user']
+            data = get_token_response(user)
+            return Response(data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
