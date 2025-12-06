@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from auth_app.models import User
+from auth_app.models import UserProfile
+from django.contrib.auth.models import User
 
 class UserProfileSerializer(serializers.ModelSerializer):
     """
@@ -7,7 +8,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     Serializes all fields for the User model.
     """
     class Meta:
-        model = User
+        model = UserProfile
         fields = '__all__'
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -20,7 +21,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields =  ['token', 'username', 'email', 'user_id']
+        fields =  ['username', 'email', 'password', 'repeated_password']
         extra_kwargs = {
             'password': {
                 'write_only': True
@@ -37,11 +38,11 @@ class RegistrationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'error': 'Passwords do not match'})
     
     def _validate_email(self, email):
-        if User.objects.filter(email=email).exists():
+        if UserProfile.objects.filter(email=email).exists():
             raise serializers.ValidationError({'email': 'Email already exists'})
         
     def create(self, validated_data):
-        user = User(
+        user = UserProfile(
             email=validated_data['email'],
             username=validated_data['username']
         )

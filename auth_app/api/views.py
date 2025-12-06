@@ -21,6 +21,6 @@ class RegistrationView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.ave()
+        user = serializer.save()
         data = get_token_response(user)
         return Response(data, status=201)
