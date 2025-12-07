@@ -39,11 +39,11 @@ class RegistrationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'error': 'Passwords do not match'})
     
     def _validate_email(self, email):
-        if UserProfile.objects.filter(email=email).exists():
+        if User.objects.filter(email=email).exists():
             raise serializers.ValidationError({'email': 'Email already exists'})
         
     def create(self, validated_data):
-        user = UserProfile(
+        user = User(
             email=validated_data['email'],
             username=validated_data['username']
         )
@@ -52,20 +52,20 @@ class RegistrationSerializer(serializers.ModelSerializer):
         return user
     
 class AuthTokenSerializer(serializers.Serializer):
-    email = serializers.EmailField(label="email", write_only=True)
+    username = serializers.CharField(label="username", write_only=True)
     password = serializers.CharField(label="password", style={'input_type': 'password'}, trim_whitespace=False, write_only=True)
 
     def validate(self, attrs):
-        user = self._get_user_by_email(attrs.get('email'))
+        user = self._get_user_by_username(attrs.get('username'))
         self._validate_credentials(user, attrs.get('password'))
         attrs['user'] = user
         return attrs
     
-    def _get_user_by_email(self, email):
+    def _get_user_by_username(self, username):
         try:
-            return User.objects.get(email=email)
+            return User.objects.get(username=username)
         except User.DoesNotExist:
-            raise serializers.ValidationError({'email': 'No user with this email'})
+            raise serializers.ValidationError({'username': 'No user with such a username'})
         
     def _validate_credentials(self, user, password):
         if not authenticate(username=user.username, password=password):
