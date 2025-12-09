@@ -1,6 +1,7 @@
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
+from unittest.mock import patch
 
 class RegistrationAPITest(APITestCase):
     """
@@ -57,9 +58,8 @@ class RegistrationAPITest(APITestCase):
         """
         Simulate an internal error (e.g., database failure) and assert 500.
         """
-        from unittest.mock import patch
 
-        with patch("Coderr.views.RegistrationSerializer.is_valid") as mocked_is_valid:
+        with patch("auth_app.api.serializers.RegistrationSerializer.is_valid") as mocked_is_valid:
             mocked_is_valid.side_effect = Exception("Simulated DB failure")
 
             data = {
