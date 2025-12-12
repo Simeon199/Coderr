@@ -16,7 +16,7 @@ class RegistrationAPITest(APITestCase):
         Ensure that a valid POST creates a user and returns the expected payload.
         """
         data = {
-            "fullname": "Example Username",
+            "username": "Example Username",
             "email": "example@mail.de",
             "password": "examplePassword",
             "repeated_password": "examplePassword"
@@ -33,11 +33,11 @@ class RegistrationAPITest(APITestCase):
         self.assertGreater(len(response.data["token"]), 0)
 
         # Expected fields
-        expected_keys = {"token", "fullname", "email", "user_id"}
+        expected_keys = {"token", "username", "email", "user_id"}
         self.assertEqual(set(response.data.keys()), expected_keys)
 
         # Verify values match what was sent (except token & user_id)
-        self.assertEqual(response.data["fullname"], data["fullname"])
+        self.assertEqual(response.data["username"], data["username"])
         self.assertEqual(response.data["email"], data["email"])
 
     def test_registration_missing_field(self):
@@ -45,7 +45,7 @@ class RegistrationAPITest(APITestCase):
         POST without a required field should return 400.
         """
         incomplete_data = {
-            "fullname": "Example Username",
+            "username": "Example Username",
             # email omitted
             "password": "examplePassword",
             "repeated_password": "examplePassword"
@@ -63,7 +63,7 @@ class RegistrationAPITest(APITestCase):
             mocked_is_valid.side_effect = Exception("Simulated DB failure")
 
             data = {
-                "fullname": "Example Username",
+                "username": "Example Username",
                 "email": "example@mail.de",
                 "password": "examplePassword",
                 "repeated_password": "examplePassword"
