@@ -18,3 +18,16 @@ class BusinessSerializer(serializers.ModelSerializer):
             "working_hours",
             "type"
         )
+
+class CustomerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            "user",
+            "username",
+            "first_name",
+            "last_name",
+            "file",
+            "uploaded_at",
+            "type"
+        )

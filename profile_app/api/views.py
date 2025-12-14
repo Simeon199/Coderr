@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
-from .serializer import BusinessSerializer
+from .serializer import BusinessSerializer, CustomerSerializer
 
 User = get_user_model
 
@@ -35,4 +35,27 @@ class BusinessListView(generics.ListAPIView):
             )
 
 class CustomerListView(generics.ListAPIView):
-    pass
+    """
+    Returns a list of *customer* profiles belonging to the authenticated user.
+
+    - Only authenticated users can access it.
+    - In case any unexpected exception occurs while fetching data,
+      the view catches it and returns HTTP 500 with a generic error message.
+    """
+    serializer_class = CustomerSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Assuming each User has a OneToOne profile with fields `type` and other attrs.
+        return self.request.user.profile.__class__.objects.filter(type="customer")
+    
+    def list(self, request, *args, **kwargs):
+        try:
+            queryset = self.get_queryset()
+            serializer = self.serializer_class(queryset, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception:
+            return Response(
+                {"detail": "An unexpected error occurred."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
