@@ -42,7 +42,7 @@ class LoginAPITest(APITestCase):
 
     def test_login_invalid_password_or_username(self):
         User = get_user_model()
-        User.obects.create_user(
+        User.objects.create_user(
             username="exampleUsername",
             password="correctPassword"
         )
@@ -54,7 +54,7 @@ class LoginAPITest(APITestCase):
         }
         response1 = self.client.post(self.url, data_wrong_password, format="json")
         self.assertEqual(response1.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("non_field_errors", response1.data)
+        self.assertIn("password", response1.data)
 
         # Wrong username
         data_wrong_user = {
@@ -63,14 +63,14 @@ class LoginAPITest(APITestCase):
         }
         response2 = self.client.post(self.url, data_wrong_user, format="json")
         self.assertEqual(response2.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("non_field_errors", response2.data)
+        self.assertIn("username", response2.data)
         
 
     def test_login_internal_error(self):
         # Simulate an unexpected exception in the view (e.g, DB outage).
         # Patch the authentication backend to raise a generic Exception.
         with mock.patch(
-            "auth_app.views.CustomAuthView.authenticate",
+            "auth_app.api.views.LoginView.post",
             side_effect=Exception("DB connection lost")
         ):
             data = {

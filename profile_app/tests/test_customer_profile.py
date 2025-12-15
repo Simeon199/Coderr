@@ -85,7 +85,7 @@ class CustomerProfileViewTest(APITestCase):
 
         # Patch the serializer to raise an exception
         with patch(
-            "profile_app.views.CustomerProfileSerializer",
+            "profile_app.api.views.CustomerSerializer",
             side_effect=Exception("simulated failure")
         ):
             response = client.get(self.url)

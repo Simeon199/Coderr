@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate
 from auth_app.models import UserProfile
 from django.contrib.auth.models import User
 
+
 class UserProfileSerializer(serializers.ModelSerializer):
     """
     Serializer for the User model.
@@ -12,26 +13,26 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = UserProfile
         fields = '__all__'
 
+
 class RegistrationSerializer(serializers.ModelSerializer):
     """
     Serializer for user registration.
     Handles validation and creation of new users.
     """
     username = serializers.CharField()
+    email = serializers.EmailField(write_only=True)
     repeated_password = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
-        fields =  ['username', 'email', 'password', 'repeated_password']
+        fields = ['username', 'email', 'password', 'repeated_password']
         extra_kwargs = {
-            'password': {
-                'write_only': True
-            }
+            'password': {'write_only': True}
         }
-
     def validate(self, data):
         self._validate_passwords(data)
-        self._validate_email(data['email'])
+        if 'email' in data:
+            self._validate_email(data['email'])
         return data
     
     def _validate_passwords(self, data):
@@ -43,18 +44,23 @@ class RegistrationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'email': 'Email already exists'})
         
     def create(self, validated_data):
+        email = validated_data.get('email')
         user = User(
-            email=validated_data['email'],
+            email=email,
             username=validated_data['username']
         )
         user.set_password(validated_data['password'])
         user.save()
         return user
-    
+
 class AuthTokenSerializer(serializers.Serializer):
     username = serializers.CharField(label="username", write_only=True)
-    password = serializers.CharField(label="password", style={'input_type': 'password'}, trim_whitespace=False, write_only=True)
-
+    password = serializers.CharField(
+        label="password",
+        style={'input_type': 'password'},
+        trim_whitespace=False,
+        write_only=True
+    )
     def validate(self, attrs):
         user = self._get_user_by_username(attrs.get('username'))
         self._validate_credentials(user, attrs.get('password'))
