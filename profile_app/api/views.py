@@ -1,8 +1,10 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
+from profile_app.models import CustomerProfile, BusinessProfile
 from .serializer import BusinessSerializer, CustomerSerializer
 
 User = get_user_model
@@ -15,11 +17,12 @@ class BusinessListView(generics.ListAPIView):
     """
 
     serializer_class = BusinessSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         # Filter by the custom `type` attribute on the user model.
-        return User.objects.fitler(type="business")
+        print(f"business_user: {User.objects.filter(type="business")}")
+        return User.objects.filter(type="business")
     
     # Optional: override list to explicitly catch unexpected errors
     def list(self, request, *args, **kwargs):
@@ -43,7 +46,7 @@ class CustomerListView(generics.ListAPIView):
       the view catches it and returns HTTP 500 with a generic error message.
     """
     serializer_class = CustomerSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         # Assuming each User has a OneToOne profile with fields `type` and other attrs.
@@ -59,3 +62,24 @@ class CustomerListView(generics.ListAPIView):
                 {"detail": "An unexpected error occurred."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+        
+class ProfileView(APIView):
+    """
+    API view for retrieving and updating individual profiles.
+    Requires the user to be authenticated
+    """
+    # permission_classes=[IsAuthenticated]
+
+    def get(self, request):
+        """
+        Handle GET requests to check for a profile by pk.
+        
+        Query Parameters:
+            pk (int): The private key to search for.
+
+        Returns:
+            Response: Profile details if found, or an error message.
+        """
+        pk = request.query_params.get('pk')
+        if not pk:
+            return Response({'detail': 'Private '})

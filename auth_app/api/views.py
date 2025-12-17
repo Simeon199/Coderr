@@ -37,3 +37,9 @@ class LoginView(APIView):
             data = get_token_response(user)
             return Response(data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    # def handle_exception(self, exc):
+    #     # Log the exception
+    #     print(f"Exception in LoginView: {exc}")
+    #     # Return a generic internal server error response
+    #     return Response({'detail': 'Internal Server Error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
