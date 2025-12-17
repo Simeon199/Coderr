@@ -1,11 +1,12 @@
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
+from profile_app.models import BusinessProfile, CustomerProfile
+# from django.contrib.auth import get_user_model
 
-User = get_user_model
+# User = get_user_model
 
 class BusinessSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = BusinessProfile
         fields = (
             "id",
             "username",
@@ -21,7 +22,7 @@ class BusinessSerializer(serializers.ModelSerializer):
 
 class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = CustomerProfile
         fields = (
             "user",
             "username",

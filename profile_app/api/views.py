@@ -1,13 +1,11 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+# from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import User
-from profile_app.models import CustomerProfile, BusinessProfile
 from .serializer import BusinessSerializer, CustomerSerializer
 
-User = get_user_model
+# import logging
+# logger = logging.getLogger(__name__)
 
 class BusinessListView(generics.ListAPIView):
     """
@@ -20,9 +18,11 @@ class BusinessListView(generics.ListAPIView):
     # permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Filter by the custom `type` attribute on the user model.
-        print(f"business_user: {User.objects.filter(type="business")}")
-        return User.objects.filter(type="business")
+        user = self.request.user
+        business_user = user.objects.filter(type="business-profile")
+        print(f"business user is: {business_user}")
+        # logger.debug("BusinessUser queryset: %s", business_user.query)
+        return business_user
     
     # Optional: override list to explicitly catch unexpected errors
     def list(self, request, *args, **kwargs):
@@ -50,7 +50,7 @@ class CustomerListView(generics.ListAPIView):
 
     def get_queryset(self):
         # Assuming each User has a OneToOne profile with fields `type` and other attrs.
-        return self.request.user.profile.__class__.objects.filter(type="customer")
+        return self.request.user.profile.__class__.objects.filter(type="customer-profile")
     
     def list(self, request, *args, **kwargs):
         try:
