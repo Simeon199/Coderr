@@ -1,8 +1,5 @@
 from rest_framework import serializers
 from profile_app.models import BusinessProfile, CustomerProfile
-# from django.contrib.auth import get_user_model
-
-# User = get_user_model
 
 class BusinessSerializer(serializers.ModelSerializer):
     class Meta:
@@ -20,6 +17,9 @@ class BusinessSerializer(serializers.ModelSerializer):
             "type"
         )
 
+    def get_business_users(self, obj):
+        return obj.user
+
 class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerProfile
@@ -32,3 +32,6 @@ class CustomerSerializer(serializers.ModelSerializer):
             "uploaded_at",
             "type"
         )
+    
+    def get_customer_users(self, obj):
+        return obj.user 
