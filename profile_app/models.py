@@ -1,5 +1,4 @@
 from django.db import models
-# from auth_app.models import UserProfile
 from django.contrib.auth.models import User
 
 class AbstractProfile(models.Model):

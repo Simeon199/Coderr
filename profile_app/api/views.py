@@ -1,32 +1,25 @@
+from django.contrib.auth.models import User
+from auth_app.api.serializers import UserProfileSerializer
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .serializer import BusinessSerializer, CustomerSerializer
 
-
-class BusinessListView(generics.ListAPIView):
+class BusinessListView(generics.ListCreateAPIView):
     """
     Returns a list of all users whose `type` field is set to `"business"`.
     Only authenticated callers are allowed.
     Any unhandled exception will surface a HTTP 500 (DRF default).
     """
-
+    queryset = User.objects.all()
     serializer_class = BusinessSerializer
 
     def get_queryset(self):
-        user = self.request.user
-        return user
-    
-    # def list(self, request, *args, **kwargs):
-    #     try:
-    #         queryset = self.get_queryset()
-    #         serializer = self.serializer_class(queryset, many=True)
-    #         return Response(serializer.data)
-    #     except Exception as exc:
-    #         return Response(
-    #             {"detail": "Internal server error"},
-    #             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-    #         )
+        return User.objects.filter(type="business")
+    # def list(self, request):
+    #     queryset = self.get_queryset()
+    #     serializer = UserProfileSerializer(queryset, many=True)
+    #     return Response(serializer.data)
 
 class CustomerListView(generics.ListAPIView):
     """
@@ -36,21 +29,15 @@ class CustomerListView(generics.ListAPIView):
     - In case any unexpected exception occurs while fetching data,
       the view catches it and returns HTTP 500 with a generic error message.
     """
+    queryset = User.objects.all()
     serializer_class = CustomerSerializer
-
-    def get_queryset(self):
-        return self.request.user.profile.__class__.objects.filter(type="customer-profile")
     
-    def list(self, request, *args, **kwargs):
-        try:
-            queryset = self.get_queryset()
-            serializer = self.serializer_class(queryset, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except Exception:
-            return Response(
-                {"detail": "An unexpected error occurred."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+    def get_queryset(self):
+        return User.objects.filter(type="customer")
+    # def list(self, request):
+    #     queryset = self.get_queryset()
+    #     serializer = UserProfileSerializer(queryset, many=True)
+    #     return Response(serializer.data)
         
 class ProfileView(APIView):
     """
