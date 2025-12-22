@@ -5,7 +5,7 @@ from .serializers import (
     CustomerProfileSerializer,
     BusinessProfileSerializer
 )
-from django.contrib.auth.models import User
+from auth_app.models import User
 from profile_app.models import CustomerProfile, BusinessProfile
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
@@ -13,6 +13,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import generics, status
 from rest_framework.authentication import TokenAuthentication
+from django.shortcuts import get_object_or_404
 
 def get_token_response(user):
     """
@@ -78,3 +79,26 @@ class BusinessListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication]
     queryset = BusinessProfile.objects.all()
+
+class UserProfileView(APIView):
+    """
+    View to get and update user profile.
+    Handles both customer and business profiles.
+    """
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    def get(self, request):
+        user = request.user
+
+        if user.type == 'customer':
+            profile = get_object_or_404(CustomerProfile, user=user)
+            serializer = CustomerProfileSerializer(profile, data=request.data, partial=True)
+        else:
+            profile = get_object_or_404(BusinessProfile, user=user)
+            serializer = BusinessProfileSerializer(profile, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

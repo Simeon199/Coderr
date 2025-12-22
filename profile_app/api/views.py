@@ -1,60 +1,101 @@
 from django.contrib.auth.models import User
-from auth_app.api.serializers import UserProfileSerializer
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .serializer import BusinessSerializer, CustomerSerializer
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
+from .serializer import(
+    BusinessSerializer,
+    CustomerSerializer,
+    BusinessProfileUpdateSerializer,
+    CustomerProfileUpdateSerializer
+)
+from profile_app.models import BusinessProfile, CustomerProfile
+from django.shortcuts import get_object_or_404
 
-class BusinessListView(generics.ListCreateAPIView):
+class BusinessListView(generics.ListAPIView):
     """
-    Returns a list of all users whose `type` field is set to `"business"`.
-    Only authenticated callers are allowed.
-    Any unhandled exception will surface a HTTP 500 (DRF default).
+    Returns a list of all business profiles.
+    Only authenticated users are allowed.
     """
-    queryset = User.objects.all()
     serializer_class = BusinessSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
 
     def get_queryset(self):
-        return User.objects.filter(type="business")
-    # def list(self, request):
-    #     queryset = self.get_queryset()
-    #     serializer = UserProfileSerializer(queryset, many=True)
-    #     return Response(serializer.data)
+        # Return BusinessProfile objects, not User objects
+        return BusinessProfile.objects.all()
 
 class CustomerListView(generics.ListAPIView):
     """
-    Returns a list of *customer* profiles belonging to the authenticated user.
-
-    - Only authenticated users can access it.
-    - In case any unexpected exception occurs while fetching data,
-      the view catches it and returns HTTP 500 with a generic error message.
+    Returns a list of all customer profiles.
+    Only authenticated users are allowed.
     """
-    queryset = User.objects.all()
     serializer_class = CustomerSerializer
-    
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
     def get_queryset(self):
-        return User.objects.filter(type="customer")
-    # def list(self, request):
-    #     queryset = self.get_queryset()
-    #     serializer = UserProfileSerializer(queryset, many=True)
-    #     return Response(serializer.data)
-        
+        # Return CustomerProfile objects, not User objects
+        return CustomerProfile.objects.all()
+
 class ProfileView(APIView):
     """
     API view for retrieving and updating individual profiles.
-    Requires the user to be authenticated
+    Requires the user to be authenticated.
     """
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
 
     def get(self, request):
         """
-        Handle GET requests to check for a profile by pk.
-        
-        Query Parameters:
-            pk (int): The private key to search for.
-
-        Returns:
-            Response: Profile details if found, or an error message.
+        Handle GET requests to retrieve the authenticated user's profile
         """
-        pk = request.query_params.get('pk')
-        if not pk:
-            return Response({'detail': 'Private '})
+        user = request.user
+
+        try:
+            if user.type == 'business':
+                profile = BusinessProfile.objects.get(user=user)
+                serializer = BusinessSerializer(profile)
+            else:
+                profile = CustomerProfile.objects.get(user=user)
+                serializer = CustomerSerializer(profile)
+            
+            return Response(serializer.data)
+        except(BusinessProfile.DoesNotExist, CustomerProfile.DoesNotExist):
+            return Response(
+                {'detail': 'Profile not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+    def put(self, request):
+        """Optional for the present"""
+        pass
+
+class BusinessProfileDetailView(generics.RetrieveAPIView):
+    """
+    Retrieve a specific business profile by ID.
+    """
+    queryset = BusinessProfile.objects.all()
+    serializer_class = BusinessSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+    lookup_field = 'pk'
+
+class CustomerProfileDetailView(generics.RetrieveAPIView):
+    """
+    Retrieve a specific customer profile by ID.
+    """
+    queryset = CustomerProfile.objects.all()
+    serializer_class = CustomerSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+    lookup_field = 'pk'
+
+# Optional
+
+class ProfileUpdateView(APIView):
+    """
+    Docstring for ProfileUpdateView
+    """
+    pass
