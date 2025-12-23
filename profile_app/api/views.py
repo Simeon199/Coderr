@@ -68,9 +68,29 @@ class ProfileView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
         
-    def put(self, request):
-        """Optional for the present"""
-        pass
+    def patch(self, request, pk=None):
+        """
+        Handle PATCH requests to update the authenticated user's profile.
+        """
+        user = request.user
+        try:
+            if user.type == 'business':
+                profile = BusinessProfile.objects.get(user=user, pk=pk)
+                serializer = BusinessProfileUpdateSerializer(profile, data=request.data, partial=True)
+            else:
+                profile = CustomerProfile.objects.get(user=user)
+                serializer = CustomerProfileUpdateSerializer(profile, data=request.data, partial=True)
+
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except(BusinessProfile.DoesNotExist, CustomerProfile.DoesNotExist):
+            return Response(
+                {'detail': 'Profile not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
 class BusinessProfileDetailView(generics.RetrieveAPIView):
     """
@@ -94,8 +114,34 @@ class CustomerProfileDetailView(generics.RetrieveAPIView):
 
 # Optional
 
-class ProfileUpdateView(APIView):
-    """
-    Docstring for ProfileUpdateView
-    """
-    pass
+# class ProfileUpdateView(APIView):
+#     """
+#     API view for updating individual profiles.
+#     Requires the user to be authenticated.
+#     """
+#     permission_classes = [IsAuthenticated]
+#     authentication_classes = [TokenAuthentication]
+
+#     def patch(self, request):
+#         """
+#         Handle PATCH requests to update the authenticated user's profile.
+#         """
+#         user = request.user
+#         try:
+#             if user.type == 'business':
+#                 profile = BusinessProfile.objects.get(user=user)
+#                 serializer = BusinessProfileUpdateSerializer(profile, data=request.data, partial=True)
+#             else:
+#                 profile = CustomerProfile.objects.get(user=user)
+#                 serializer = CustomerProfileUpdateSerializer(profile, data=request.data, partial=True)
+
+#             if serializer.is_valid():
+#                 serializer.save()
+#                 return Response(serializer.data)
+#             else:
+#                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#         except(BusinessProfile.DoesNotExist, CustomerProfile.DoesNotExist):
+#             return Response(
+#                 {'detail': 'Profile not found'},
+#                 status=status.HTTP_404_NOT_FOUND
+#             )

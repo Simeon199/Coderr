@@ -7,11 +7,7 @@ class AbstractProfile(models.Model):
         on_delete=models.CASCADE, 
         related_name='%(class)s_profile'
     )
-    # TYPE_CHOICES = (
-    #     ('customer', 'Customer'),
-    #     ('business', 'Business')
-    # )
-    # type = models.CharField(max_length=10, choices=TYPE_CHOICES, default='customer')
+    
     first_name = models.CharField(max_length=100, blank=True)
     last_name = models.CharField(max_length=100, blank=True)
     file = models.CharField(max_length=100, null=True)

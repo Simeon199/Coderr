@@ -4,7 +4,6 @@ from auth_app.models import CustomUser
 from rest_framework.authtoken.models import Token
 from profile_app.models import CustomerProfile, BusinessProfile
 
-
 class UserRegistrationSerializer(serializers.ModelSerializer):
     """
     Serializer for user registration.
