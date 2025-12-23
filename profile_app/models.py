@@ -1,13 +1,17 @@
 from django.db import models
 from django.conf import settings
-# from django.contrib.auth.models import User
 
 class AbstractProfile(models.Model):
     user = models.OneToOneField(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name='%(class)s_profile',
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        related_name='%(class)s_profile'
     )
+    # TYPE_CHOICES = (
+    #     ('customer', 'Customer'),
+    #     ('business', 'Business')
+    # )
+    # type = models.CharField(max_length=10, choices=TYPE_CHOICES, default='customer')
     first_name = models.CharField(max_length=100, blank=True)
     last_name = models.CharField(max_length=100, blank=True)
     file = models.CharField(max_length=100, null=True)
@@ -16,7 +20,7 @@ class AbstractProfile(models.Model):
         abstract = True
 
     def __str__(self):
-        return f"{self.user.username}'s {self.__class__.__name__}"
+        return f"{self.username} ({self.get_type_display()})"
 
 class CustomerProfile(AbstractProfile):
     pass

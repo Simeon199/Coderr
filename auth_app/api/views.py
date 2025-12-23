@@ -5,7 +5,7 @@ from .serializers import (
     CustomerProfileSerializer,
     BusinessProfileSerializer
 )
-from auth_app.models import User
+# from auth_app.models import UserModel
 from profile_app.models import CustomerProfile, BusinessProfile
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authtoken.models import Token
@@ -34,7 +34,7 @@ class RegistrationView(generics.CreateAPIView):
     """
     serializer_class = UserRegistrationSerializer
     permission_classes = [AllowAny]
-    queryset = User.objects.all()
+    # queryset = AbstractProfile.objects.all()
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

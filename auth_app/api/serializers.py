@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
-from auth_app.models import User
+from auth_app.models import CustomUser
 from rest_framework.authtoken.models import Token
 from profile_app.models import CustomerProfile, BusinessProfile
 
@@ -14,7 +14,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     repeated_password = serializers.CharField(write_only=True, required=True)
     
     class Meta:
-        model = User
+        model = CustomUser
         fields = ['username', 'email', 'password', 'repeated_password', 'type']
         extra_kwargs = {
             'password': {'write_only': True},
@@ -27,11 +27,11 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'error': 'Passwords do not match'})
         
         # Validate email uniqueness
-        if User.objects.filter(email=data['email']).exists():
+        if CustomUser.objects.filter(email=data['email']).exists():
             raise serializers.ValidationError({'email': 'Email already exists'})
         
         # Validate username uniqueness
-        if User.objects.filter(username=data['username']).exists():
+        if CustomUser.objects.filter(username=data['username']).exists():
             raise serializers.ValidationError({'username': 'Username already exists'})
         
         return data
@@ -41,7 +41,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         validated_data.pop('repeated_password')
 
         # Create the user
-        user = User.objects.create_user(
+        user = CustomUser.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
             password=validated_data['password'],
@@ -90,7 +90,7 @@ class RegistrationResponseSerializer(serializers.ModelSerializer):
     token = serializers.SerializerMethodField()
 
     class Meta:
-        model = User
+        model = CustomUser
         fields = ['token', 'username', 'email', 'id']
         read_only_fields = ['token', 'username', 'email', 'id']
 
