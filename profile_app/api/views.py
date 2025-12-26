@@ -74,10 +74,10 @@ class ProfileView(APIView):
         try:
             user_obj = CustomUser.objects.get(pk=user)
             if user_obj.type == 'business':
-                profile = BusinessProfile.objects.get(pk=user_obj)
+                profile = BusinessProfile.objects.get(user=user_obj)
                 serializer = BusinessProfileUpdateSerializer(profile, data=request.data, partial=True)
             else:
-                profile = CustomerProfile.objects.get(pk=user_obj)
+                profile = CustomerProfile.objects.get(user=user_obj)
                 serializer = CustomerProfileUpdateSerializer(profile, data=request.data, partial=True)
             
             if serializer.is_valid():
