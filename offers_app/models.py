@@ -2,7 +2,13 @@ from django.db import models
 from auth_app.models import CustomUser
 
 class UserDetails(models.Model):
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='user_details')
+    user = models.OneToOneField(
+        CustomUser, 
+        on_delete=models.CASCADE, 
+        related_name='user_details', 
+        null=True, 
+        blank=True
+    )
     first_name = models.CharField(max_length=100, null=True, blank=True)
     last_name = models.CharField(max_length=100, null=True, blank=True)
     username = models.CharField(max_length=100, null=True, blank=True)
@@ -10,15 +16,14 @@ class UserDetails(models.Model):
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
     
-class OfferDetail(models.Model):
-    offer = models.ForeignKey('Offer', on_delete=models.CASCADE, related_name='offer_details')
-    url = models.CharField(max_length=255)
-
-    def __str__(self):
-        return self.url
-    
 class Offer(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='offers')
+    user = models.ForeignKey(
+        CustomUser, 
+        on_delete=models.CASCADE, 
+        related_name='user_offers',
+        null=True,
+        blank=True
+    )
     title = models.CharField(max_length=255, null=True, blank=True)
     image = models.ImageField(upload_to='offers/', null=True, blank=True)
     description = models.TextField(null=True, blank=True)
@@ -29,3 +34,21 @@ class Offer(models.Model):
 
     def __str__(self):
         return self.title
+    
+class OfferDetail(models.Model):
+    user = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        related_name='offer_details_user',
+        null=True,
+        blank=True
+    )
+    offer = models.ForeignKey(
+        Offer, 
+        on_delete=models.CASCADE, 
+        related_name='offer_details'
+    )
+    url = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.url
