@@ -12,24 +12,25 @@ class UserDetailsSerializer(serializers.ModelSerializer):
         fields =['first_name', 'last_name', 'username']
 
 class OfferSerializer(serializers.ModelSerializer):
-    details = OfferDetailSerializer(many=True)
+    details = OfferDetailSerializer(many=True, source='offer_details')
     user_details = UserDetailsSerializer(source='user.user_details', read_only=True)
 
     class Meta:
         model = Offer
-        fields = ['id', 'user', 'title', 'image', 'description', 'created_at', 'updated_at', 'details', 'min_price', 'min_delivery_time', 'user_details']  # Simplified to match response structure
-        
-        def create(self, validated_data):
-            details_data = validated_data.pop('details', [])
-            offer = Offer.objects.create(**validated_data)
-            for detail_data in details_data:
-                OfferDetail.objects.create(offer=offer, user=offer.user, **detail_data)
-            return offer
-        
-        def update(self, instance, validated_data):
-            details_data = validated_data.pop('details', [])
-            instance = super().update(instance, validated_data)
-            instance.offer_details.all().delete()
-            for detail_data in details_data:
-                OfferDetail.objects.create(offer=instance, user=instance.user, **detail_data)
-            return instance
+        fields = ['id', 'user', 'title', 'image', 'description', 'created_at', 'updated_at', 'details', 'min_price', 'min_delivery_time', 'user_details']
+        read_only_fields = ['user_details', 'min_price', 'min_delivery_time', 'created_at', 'updated_at']
+
+    def create(self, validated_data):
+        offer_details_data = validated_data.pop('offer_details', [])
+        offer = Offer.objects.create(**validated_data)
+        for detail_data in offer_details_data:
+            OfferDetail.objects.create(offer=offer, user=offer.user, **detail_data)
+        return offer 
+    
+    def update(self, instance, validated_data):
+        offer_details_data = validated_data.pop('offer_details', [])
+        instance = super().update(instance, validated_data)
+        instance.offer_details.all().delete()
+        for detail_data in offer_details_data:
+            OfferDetail.objects.create(offer=instance, **detail_data)
+        return instance
