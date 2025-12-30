@@ -48,7 +48,6 @@ class OfferDetail(models.Model):
         on_delete=models.CASCADE, 
         related_name='offer_details'
     )
-    # url = models.CharField(max_length=255)
     title = models.CharField(max_length=255, null=True, blank=True)
     revisions = models.IntegerField(null=True, blank=True)
     delivery_time_in_days = models.IntegerField(null=True, blank=True)

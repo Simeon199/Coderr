@@ -1,67 +1,40 @@
 from rest_framework import serializers
 from offers_app.models import Offer, OfferDetail, UserDetails
 
-class OfferDetailSerializer(serializers.ModelSerializer):
-    # class Meta:
-    #     model = OfferDetail
-    #     fields = ['id', 'title', 'revisions', 'delivery_time_in_days', 'price', 'features', 'offer_type']
-    
-    url = serializers.SerializerMethodField()
-    class Meta:
-        model = OfferDetail
-        fields = ['id', 'url']
+class UserDetailsSerializer(serializers.Serializer):
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    username = serializers.CharField()
 
-    def get_url(self, obj):
-        return f'/offerdetails/{obj.id}/'
-
-class UserDetailsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UserDetails
-        fields =['first_name', 'last_name', 'username']
+class OfferDetailSerializer(serializers.Serializer):
+    model = OfferDetail
+    fields = ['id', 'title', 'revisions', 'delivery_time_in_days', 'price', 'features', 'offer_type']
+    read_only_fields = ['id']
 
 class OfferSerializer(serializers.ModelSerializer):
-    details = OfferDetailSerializer(many=True, source='offer_details')
-    user_details = UserDetailsSerializer(source='user.user_details', read_only=True)
+    details = OfferDetailSerializer(many=True, read_only=True)
+    user_details = UserDetailsSerializer(source='user', read_only=True)
 
     class Meta:
         model = Offer
         fields = ['id', 'user', 'title', 'image', 'description', 'created_at', 'updated_at', 'details', 'min_price', 'min_delivery_time', 'user_details']
-        read_only_fields = ['user_details', 'min_price', 'min_delivery_time', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'min_price', 'min_delivery_time', 'user_details']
+
+    def validate_details(self, value):
+        """
+        Validate that the 'details' list contains at least three items.
+        """
+        if(len(value)<3):
+            raise serializers.ValidationError("At least three offer details are required.")
+        return value
 
     def create(self, validated_data):
-        offer_details_data = validated_data.pop('offer_details', [])
+        details_data = validated_data.pop('details', [])
         offer = Offer.objects.create(**validated_data)
-        for detail_data in offer_details_data:
+        for detail_data in details_data:
             OfferDetail.objects.create(offer=offer, user=offer.user, **detail_data)
-        # Calculate and set mins
         if offer.offer_details.exists():
             offer.min_price = min(detail.price for detail in offer.offer_details.all() if detail.price)
             offer.min_delivery_time = min(detail.delivery_time_in_days for detail in offer.offer_details.all() if detail.delivery_time_in_days)
-        offer.sace()
+            offer.save()
         return offer
-
-    def update(self, instance, validated_data):
-        offer_details_data = validated_data.pop('offer_details', [])
-        instance = super().update(instance, validated_data)
-        instance.offer_details.all().delete()
-        for detail_data in offer_details_data:
-            OfferDetail.objects.create(offer=instance, **detail_data)
-        if instance.offer_details.exists():
-            instance.min_price = min(detail.price for detail in instance.offer_details.all() if detail.price)
-            instance.min_delivery_time = min(detail.delivery_time_in_days for detail in instance.offer_details.all() if detail.delivery_time_in_days)
-        instance.save()
-        return instance
-    # def create(self, validated_data):
-    #     offer_details_data = validated_data.pop('offer_details', [])
-    #     offer = Offer.objects.create(**validated_data)
-    #     for detail_data in offer_details_data:
-    #         OfferDetail.objects.create(offer=offer, user=offer.user, **detail_data)
-    #     return offer 
-    
-    # def update(self, instance, validated_data):
-    #     offer_details_data = validated_data.pop('offer_details', [])
-    #     instance = super().update(instance, validated_data)
-    #     instance.offer_details.all().delete()
-    #     for detail_data in offer_details_data:
-    #         OfferDetail.objects.create(offer=instance, **detail_data)
-    #     return instance
