@@ -81,7 +81,16 @@ class SingleOfferSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at', 'updated_at', 'min_price', 'min_delivery_time', 'details']
 
 class SingleOfferUpdateSerializer(serializers.ModelSerializer):
-    pass
+    class Meta:
+        model = Offer
+        fields = ['title', 'image', 'description']
+        extra_kwargs = {
+            'title': {'required': False},
+            'image': {'required': False},
+            'description': {'required': False},
+        }
 
 class SingleOfferDeleteSerializer(serializers.ModelSerializer):
-    pass
+    class Meta:
+        model = Offer
+        fields = []
