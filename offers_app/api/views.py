@@ -1,7 +1,7 @@
 from offers_app.models import Offer
 from rest_framework import generics
 from rest_framework.pagination import PageNumberPagination
-from .serializers import OfferSerializer
+from .serializers import OfferCreateSerializer, OfferListSerializer
 from .permissions import IsBusinessUser
 
 class CustomPageNumberPagination(PageNumberPagination):
@@ -9,9 +9,13 @@ class CustomPageNumberPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
 
 class OffersListView(generics.ListCreateAPIView):
-    serializer_class = OfferSerializer
     permission_classes = [IsBusinessUser]
     pagination_class = CustomPageNumberPagination
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return OfferCreateSerializer
+        return OfferListSerializer
 
     def get_queryset(self):
         queryset = Offer.objects.all()
