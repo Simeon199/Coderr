@@ -1,5 +1,16 @@
 from rest_framework import permissions
 
+class SingleBoardPermission(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        user = request.user
+        is_creator = obj.user == user
+        if request.method in permissions.SAFE_METHODS:
+            return user and user.is_authenticated
+        if request.method == 'PATCH':
+            return is_creator
+        if request.method == 'DELETE':
+            return is_creator
+
 class IsBusinessUser(permissions.BasePermission):
     """
     Custom permission to only allow business users to create offers.

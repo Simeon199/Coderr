@@ -71,3 +71,17 @@ class OfferListSerializer(serializers.ModelSerializer):
         model = Offer
         fields = ['id', 'user', 'title', 'image', 'description', 'created_at', 'updated_at', 'details', 'min_price', 'min_delivery_time', 'user_details']
         read_only_fields = ['id', 'created_at', 'updated_at', 'min_price', 'min_delivery_time', 'user_details', 'details']
+
+class SingleOfferSerializer(serializers.ModelSerializer):
+    details = OfferDetailListSerializer(source='offer_details', many=True, read_only=True)
+
+    class Meta:
+        model = Offer
+        fields = ['id', 'user', 'title', 'image', 'description', 'created_at', 'updated_at', 'details', 'min_price', 'min_delivery_time', 'user_details']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'min_price', 'min_delivery_time', 'details']
+
+class SingleOfferUpdateSerializer(serializers.ModelSerializer):
+    pass
+
+class SingleOfferDeleteSerializer(serializers.ModelSerializer):
+    pass
