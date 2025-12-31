@@ -1,11 +1,11 @@
 from offers_app.models import Offer
 from rest_framework import generics
-from rest_framework.permissions import AllowAny
 from rest_framework.pagination import PageNumberPagination
 from .serializers import OfferSerializer
 from .permissions import IsBusinessUser
 
 class CustomPageNumberPagination(PageNumberPagination):
+    page_size = 10
     page_size_query_param = 'page_size'
 
 class OffersListView(generics.ListCreateAPIView):
@@ -19,7 +19,7 @@ class OffersListView(generics.ListCreateAPIView):
         # Filter by creator_id
         creator_id = self.request.query_params.get('creator_id')
         if creator_id is not None:
-            queryset = queryset.filter(creator_id=creator_id)
+            queryset = queryset.filter(user_id=creator_id)
 
         # Filter by min_price
         min_price = self.request.query_params.get('min_price')
@@ -45,14 +45,3 @@ class OffersListView(generics.ListCreateAPIView):
     
     def perform_create(self, serializer):
         serializer.save(user=self.request.user if self.request.user.is_authenticated else None)
-
-# Old OffersListView version
-
-# class OffersListView(generics.ListCreateAPIView):
-#     queryset = Offer.objects.all()
-#     serializer_class = OfferSerializer
-#     pagination_class = PageNumberPagination
-#     permission_classes = [AllowAny]
-
-#     def perform_create(self, serializer):
-#         serializer.save(user=self.request.user if self.request.user.is_authenticated else None)
