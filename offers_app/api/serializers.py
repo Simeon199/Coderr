@@ -81,14 +81,63 @@ class SingleOfferSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at', 'updated_at', 'min_price', 'min_delivery_time', 'details']
 
 class SingleOfferUpdateSerializer(serializers.ModelSerializer):
+    details = OfferDetailCreateSerializer(source='offer_details', many=True, required=False)
+
     class Meta:
         model = Offer
-        fields = ['title', 'image', 'description']
+        fields = ['title', 'image', 'description', 'details']
         extra_kwargs = {
             'title': {'required': False},
             'image': {'required': False},
             'description': {'required': False},
         }
+
+    # def validate_details(self, value):
+    #     if value is not None and len(value) < 3:
+    #         raise serializers.ValidationError("At least three offer details are required.")
+    #     return value
+    
+    def update(self, instance, validated_data):
+        details_data = validated_data.pop('offer_details', None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        if details_data is not None:
+            # Get existing details
+            existing_details = {detail.id: detail for detail in instance.offer_details.all()}
+            updated_ids = set()
+
+            for detail_data in details_data:
+                detail_id = detail_data.get('id')
+                if detail_id and detail_id in existing_details:
+                    # Update existing 
+                    detail = existing_details[detail_id]
+                    for attr, value in detail_data.items():
+                        if attr != 'id':
+                            setattr(detail, attr, value)
+                    detail.save()
+                    updated_ids.add(detail_id)
+                else:
+                    # Create new
+                    features = detail_data.pop('features', [])
+                    OfferDetail.objects.create(offer=instance, **detail_data)
+        
+            # Delete details not in the update
+            for detail_id, detail in existing_details.items():
+                if detail_id not in updated_ids:
+                    detail.delete()
+
+            # Recalculate min_price and min_delivery_time
+            if instance.offer_details.exists():
+                instance.min_price = min((d.price for d in instance.offer_details.all() if d.price), default=None)
+                instance.min_delivery_time = min((d.delivery_time_in_days for d in instance.offer_details.all() if d.delivery_time_in_days), default=None)
+            else:
+                instance.min_price = None
+                instance.min_delivery_time = None
+            instance.save()
+
+        return instance
 
 class SingleOfferDeleteSerializer(serializers.ModelSerializer):
     class Meta:
