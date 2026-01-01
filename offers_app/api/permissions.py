@@ -1,6 +1,6 @@
 from rest_framework import permissions
 
-class SingleBoardPermission(permissions.BasePermission):
+class SingleOfferPermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         user = request.user
         is_creator = obj.user == user
@@ -10,6 +10,11 @@ class SingleBoardPermission(permissions.BasePermission):
             return is_creator
         if request.method == 'DELETE':
             return is_creator
+
+class SingleOfferDetailPermission(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return request.user and request.user.is_authenticated
 
 class IsBusinessUser(permissions.BasePermission):
     """

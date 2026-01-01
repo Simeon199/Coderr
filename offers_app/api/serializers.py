@@ -143,3 +143,8 @@ class SingleOfferDeleteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Offer
         fields = []
+
+class SingleOfferDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OfferDetail
+        fields = ['id', 'title', 'revisions', 'delivery_time_in_days', 'price', 'features', 'offer_type']
