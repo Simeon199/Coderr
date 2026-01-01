@@ -1,6 +1,7 @@
 from offers_app.models import Offer
 from rest_framework import generics
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
 from .serializers import OfferCreateSerializer, OfferListSerializer, SingleOfferSerializer, SingleOfferUpdateSerializer, SingleOfferDeleteSerializer
 from .permissions import IsBusinessUser, SingleBoardPermission
 
@@ -61,3 +62,13 @@ class SingleOfferView(generics.RetrieveUpdateDestroyAPIView):
             return SingleOfferUpdateSerializer
         elif self.request.method == 'DELETE':
             return SingleOfferDeleteSerializer
+        
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        # Use the same serializer for the response to ensure consistency
+        return Response(serializer.data)
