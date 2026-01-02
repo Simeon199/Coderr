@@ -126,7 +126,7 @@ class SingleOfferUpdateSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         # Update basic offer fields
         for attr, value in validated_data.items():
-            if attr not in ['offer_details', 'user_details']:
+            if attr != 'offer_details':
                 setattr(instance, attr, value)
         instance.save()
 
@@ -150,21 +150,6 @@ class SingleOfferUpdateSerializer(serializers.ModelSerializer):
             instance.min_price = min((d.price for d in instance.offer_details.all() if d.price), default=None)
             instance.min_delivery_time = min((d.delivery_time_in_days for d in instance.offer_details.all() if d.delivery_time_in_days), default=None)
             instance.save()
-
-        # Handle user_details update
-        user_details_data = validated_data.get('user_details')
-        if user_details_data:
-            if instance.user.type == 'business':
-                profile = instance.user.business_profile
-            elif instance.user.type == 'customer':
-                profile = instance.user.customer_profile
-            else:
-                profile = None
-            if profile:
-                for attr, value in user_details_data.items():
-                    setattr(profile, attr, value)
-                profile.save()
-
         return instance
 
 class SingleOfferDeleteSerializer(serializers.ModelSerializer):
