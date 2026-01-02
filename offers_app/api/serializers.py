@@ -1,5 +1,10 @@
 from rest_framework import serializers
 from offers_app.models import Offer, OfferDetail
+from profile_app.models import CustomerProfile, BusinessProfile
+
+class ProfileUpdateSerializer(serializers.Serializer):
+    first_name = serializers.CharField(required=False)
+    last_name = serializers.CharField(required=False)
 
 class OfferDetailListSerializer(serializers.ModelSerializer):
     url = serializers.SerializerMethodField()
@@ -75,27 +80,35 @@ class OfferListSerializer(serializers.ModelSerializer):
 
 class SingleOfferSerializer(serializers.ModelSerializer):
     details = OfferDetailListSerializer(source='offer_details', many=True, read_only=True)
+    user_details = serializers.SerializerMethodField()
 
     class Meta:
         model = Offer
-        fields = ['id', 'title', 'image', 'description', 'created_at', 'updated_at', 'details', 'min_price', 'min_delivery_time'] 
+        fields = ['id', 'title', 'image', 'description', 'created_at', 'updated_at', 'details', 'min_price', 'min_delivery_time', 'user_details'] 
         read_only_fields = ['id', 'created_at', 'updated_at', 'min_price', 'min_delivery_time', 'details', 'user_details']
 
     def get_user_details(self, obj):
         if obj.user:
+            if obj.user.type == 'business':
+                profile = obj.user.business_profile
+            elif obj.user.type == 'customer':
+                profile = obj.user.customer_profile
+            else:
+                return None
             return {
-                'first_name': obj.user.first_name,
-                'last_name': obj.user.last_name,
+                'first_name': profile.first_name,
+                'last_name': profile.last_name,
                 'username': obj.user.username
             }
         return None
 
 class SingleOfferUpdateSerializer(serializers.ModelSerializer):
     details = OfferDetailCreateSerializer(source='offer_details', many=True, required=False)
+    user_details = ProfileUpdateSerializer(required=False)
 
     class Meta:
         model = Offer
-        fields = ['id', 'title', 'image', 'description', 'details']
+        fields = ['id', 'title', 'image', 'description', 'details', 'user_details']
         read_only_fields = ['id']
         extra_kwargs = {
             'title': {'required': False},
@@ -113,7 +126,7 @@ class SingleOfferUpdateSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         # Update basic offer fields
         for attr, value in validated_data.items():
-            if attr != 'offer_details':
+            if attr not in ['offer_details', 'user_details']:
                 setattr(instance, attr, value)
         instance.save()
 
@@ -137,6 +150,21 @@ class SingleOfferUpdateSerializer(serializers.ModelSerializer):
             instance.min_price = min((d.price for d in instance.offer_details.all() if d.price), default=None)
             instance.min_delivery_time = min((d.delivery_time_in_days for d in instance.offer_details.all() if d.delivery_time_in_days), default=None)
             instance.save()
+
+        # Handle user_details update
+        user_details_data = validated_data.get('user_details')
+        if user_details_data:
+            if instance.user.type == 'business':
+                profile = instance.user.business_profile
+            elif instance.user.type == 'customer':
+                profile = instance.user.customer_profile
+            else:
+                profile = None
+            if profile:
+                for attr, value in user_details_data.items():
+                    setattr(profile, attr, value)
+                profile.save()
+
         return instance
 
 class SingleOfferDeleteSerializer(serializers.ModelSerializer):
