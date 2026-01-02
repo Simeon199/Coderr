@@ -7,7 +7,7 @@ class SingleOrderDetailSerializer(serializers.ModelSerializer):
         model = OrderFeatures
         fields = ['feature']
 
-class OrderListSerializers():
+class OrderListSerializers(serializers.ModelSerializer):
     features = SingleOrderDetailSerializer(source='orders', many=True)
     
     class Meta:
