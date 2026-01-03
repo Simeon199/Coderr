@@ -7,7 +7,7 @@ class OrderFeatures(models.Model):
     def __str__(self):
         return f"{self.feature}"
 
-class Order:
+class Order(models.Model):
     customer_user = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE, related_name='assigned_customer_profile', null=True, blank=True)
     business_user = models.ForeignKey(BusinessProfile, on_delete=models.CASCADE, related_name='assigned_business_profile', null=True, blank=True)
     title = models.CharField()

@@ -1,14 +1,13 @@
 from rest_framework import serializers
 from orders_app.models import Order, OrderFeatures
 
-
 class SingleOrderDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderFeatures
         fields = ['feature']
 
 class OrderListSerializers(serializers.ModelSerializer):
-    features = SingleOrderDetailSerializer(source='orders', many=True)
+    features = SingleOrderDetailSerializer(source='features', many=True)
     
     class Meta:
         model = Order
