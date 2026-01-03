@@ -1,5 +1,6 @@
 from django.db import models
 from profile_app.models import CustomerProfile, BusinessProfile
+from offers_app.models import Offer
 
 class OrderFeatures(models.Model):
     feature = models.CharField(max_length=255)
@@ -14,11 +15,12 @@ class Order(models.Model):
     revisions = models.IntegerField()
     delivery_time_in_days = models.IntegerField()
     price = models.IntegerField()
-    features = models.ManyToManyField(OrderFeatures, related_name='orders', blank=True, null=True)
-    offer_type = models.CharField()
-    status = models.CharField()
-    created_at = models.DateTimeField()
-    updated_at = models.DateTimeField()
+    features = models.ManyToManyField(OrderFeatures, related_name='order_features', blank=True)
+    offer_type = models.CharField(max_length=50)
+    status = models.CharField(max_length=50)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    offers = models.ForeignKey(Offer, on_delete=models.CASCADE, related_name='orders', blank=True, null=True)
 
     def __str__(self):
         return f"{self.title}"

@@ -8,7 +8,9 @@ class SingleOrderDetailSerializer(serializers.ModelSerializer):
 
 class OrderListSerializers(serializers.ModelSerializer):
     features = SingleOrderDetailSerializer(source='features', many=True)
+    offer_detail_id = serializers.IntegerField(write_only=True)
     
     class Meta:
         model = Order
-        fields = ["customer_user", "business_user", "title", "revisions", "delivery_time_in_days", "price", "features", "offer_type", "status", "created_at", "updated_at"]
+        fields = ["offer_detail_id", "id", "customer_user", "business_user", "title", "revisions", "delivery_time_in_days", "price", "features", "offer_type", "status", "created_at", "updated_at"]
+        read_only_fields = ["id", "customer_user", "business_user", "title", "revisions", "delivery_time_in_days", "price", "features", "offer_type", "status", "created_at", "updated_at"]
