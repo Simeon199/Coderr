@@ -2,7 +2,7 @@ from offers_app.models import Offer, OfferDetail
 from rest_framework import generics
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-from .serializers import OfferCreateSerializer, OfferListSerializer, SingleOfferSerializer, SingleOfferUpdateSerializer, SingleOfferDeleteSerializer
+from .serializers import OfferCreateSerializer, OfferListSerializer, SingleOfferSerializer, SingleOfferUpdateSerializer, SingleOfferDeleteSerializer, SingleOfferDetailSerializer
 from .permissions import IsBusinessUser, SingleOfferPermission, SingleOfferDetailPermission
 
 class CustomPageNumberPagination(PageNumberPagination):
@@ -75,4 +75,5 @@ class SingleOfferView(generics.RetrieveUpdateDestroyAPIView):
     
 class SingleOfferDetailView(generics.RetrieveAPIView):
     queryset = OfferDetail.objects.all()
-    serializer_classes = [SingleOfferDetailPermission]
+    serializer_class = SingleOfferDetailSerializer
+    permission_classes = [SingleOfferDetailPermission]
