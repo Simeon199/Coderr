@@ -19,7 +19,8 @@ class AbstractProfile(models.Model):
         return f"{self.username}"
 
 class CustomerProfile(AbstractProfile):
-    pass
+    def __str__(self):
+        return f"{self.user.username}"
 
 class BusinessProfile(AbstractProfile):
     location = models.CharField(max_length=100, blank=True)
@@ -28,4 +29,4 @@ class BusinessProfile(AbstractProfile):
     working_hours = models.CharField(max_length=50, blank=True)
 
     def __str__(self):
-        return f"{self.user.username} - {self.location}" 
+        return f"{self.user.username}" 
