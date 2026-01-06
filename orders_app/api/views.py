@@ -1,5 +1,6 @@
 from orders_app.models import Order
 from offers_app.models import OfferDetail
+from profile_app.models import CustomerProfile, BusinessProfile
 from rest_framework import generics
 from rest_framework import status
 from .serializers import OrderListSerializers
@@ -20,19 +21,28 @@ class OrderListView(generics.ListCreateAPIView):
         except OfferDetail.DoesNotExist:
             return Response({"error": "Invalid offer_detail_id"}, status=status.HTTP_404_NOT_FOUND)
         
-        # Validate required fields from offer_detail
         if offer_detail.revisions is None or offer_detail.revisions < 0:
             return Response({"error": "Invalid offer detail: revisions must be a non-negative integer"}, status=status.HTTP_400_BAD_REQUEST)
         if not offer_detail.title:
             return Response({"error": "Invalid offer detail: title is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Fetch profiles
+        try:
+            customer_profile = CustomerProfile.objects.get(user=request.user)
+        except CustomerProfile.DoesNotExist:
+            return Response({"error": "Customer profile not found for user"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            business_profile = BusinessProfile.objects.get(user=offer_detail.user)
+        except BusinessProfile.DoesNotExist:
+            return Response({"error": "Business profile not found for offer detail user"}, status=status.HTTP_400_BAD_REQUEST)
+        
 
-        # Derive order data from the offer
-
-        features_data = [{'feature': feature} for feature in offer_detail.features]
+        # Derive order data from the offer (updated to include profiles and links)
+        features_data = [{'feature': feature} for feature in offer_detail.features or []]
 
         order_data = {
-            'customer_user': request.user,
-            'business_user': offer_detail.user,
+            'customer_user': customer_profile.id,
+            'business_user': business_profile.id,
             'title': offer_detail.title,
             'revisions': offer_detail.revisions,
             'delivery_time_in_days': offer_detail.delivery_time_in_days,
