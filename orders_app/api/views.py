@@ -20,16 +20,24 @@ class OrderListView(generics.ListCreateAPIView):
         except OfferDetail.DoesNotExist:
             return Response({"error": "Invalid offer_detail_id"}, status=status.HTTP_404_NOT_FOUND)
         
+        # Validate required fields from offer_detail
+        if offer_detail.revisions is None or offer_detail.revisions < 0:
+            return Response({"error": "Invalid offer detail: revisions must be a non-negative integer"}, status=status.HTTP_400_BAD_REQUEST)
+        if not offer_detail.title:
+            return Response({"error": "Invalid offer detail: title is required"}, status=status.HTTP_400_BAD_REQUEST)
+
         # Derive order data from the offer
 
+        features_data = [{'feature': feature} for feature in offer_detail.features]
+
         order_data = {
-            'customer_user': offer_detail.user,
+            'customer_user': request.user,
             'business_user': offer_detail.user,
             'title': offer_detail.title,
             'revisions': offer_detail.revisions,
             'delivery_time_in_days': offer_detail.delivery_time_in_days,
             'price': offer_detail.price,
-            'features': offer_detail.features.all(),
+            'features': features_data,
             'offer_type': offer_detail.offer_type,
             'status': 'in_progress'
         }
