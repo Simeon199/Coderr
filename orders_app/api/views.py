@@ -17,6 +17,8 @@ class OrderListView(generics.ListCreateAPIView):
         if not offer_detail_id:
             return Response({"error": "offer_detail_id is required"}, status=status.HTTP_400_BAD_REQUEST)
         try:
+            offer_detail_all = OfferDetail.objects.all()
+            print(f"offer_detail_all: {offer_detail_all}")
             offer_detail = OfferDetail.objects.get(id=offer_detail_id)
         except OfferDetail.DoesNotExist:
             return Response({"error": "Invalid offer_detail_id"}, status=status.HTTP_404_NOT_FOUND)
@@ -28,13 +30,20 @@ class OrderListView(generics.ListCreateAPIView):
         
         # Fetch profiles
         try:
-            customer_profile = CustomerProfile.objects.get(user=request.user)
-        except CustomerProfile.DoesNotExist:
+            customer_user = request.user
+            customer_profile = CustomerProfile.objects.get(user=customer_user)
+        except CustomerProfile.DoesNotExist: #
             return Response({"error": "Customer profile not found for user"}, status=status.HTTP_400_BAD_REQUEST)
+        # Get the business user from offer_detail (via the offer relationship)
+        business_user = offer_detail.user  # Uses the @property we added
+        
+        if not business_user:
+            return Response({"error": "No user associated with this offer detail"}, status=status.HTTP_400_BAD_REQUEST)
+        
         try:
-            business_profile = BusinessProfile.objects.get(user=offer_detail.user)
+            business_profile = BusinessProfile.objects.get(user=business_user)
         except BusinessProfile.DoesNotExist:
-            return Response({"error": "Business profile not found for offer detail user"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Business profile not found for offer user"}, status=status.HTTP_400_BAD_REQUEST)
         
 
         # Derive order data from the offer (updated to include profiles and links)

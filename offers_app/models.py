@@ -36,13 +36,6 @@ class Offer(models.Model):
         return self.title
     
 class OfferDetail(models.Model):
-    user = models.ForeignKey(
-        CustomUser,
-        on_delete=models.CASCADE,
-        related_name='offer_details_user',
-        null=True,
-        blank=True
-    )
     offer = models.ForeignKey(
         Offer, 
         on_delete=models.CASCADE, 
@@ -62,3 +55,8 @@ class OfferDetail(models.Model):
 
     def __str__(self):
         return self.title
+    
+    @property
+    def user(self):
+        """Get the user from the parent Offer"""
+        return self.offer.user
