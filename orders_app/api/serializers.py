@@ -51,3 +51,44 @@ class OrderListSerializers(serializers.ModelSerializer):
         data = super().to_representation(instance) 
         data['features'] = [f.feature for f in instance.features.all()]
         return data
+    
+class SingleOrderSerializer(serializers.ModelSerializer):
+
+    features = serializers.SlugRelatedField(
+        many=True,
+        slug_field='feature',
+        queryset=OrderFeatures.objects.all()
+    )
+
+    class Meta:
+        model = Order
+        fields = [
+            "id", 
+            "customer_user", 
+            "business_user", 
+            "title", 
+            "revisions", 
+            "delivery_time_in_days", 
+            "price", 
+            "features", 
+            "offer_type", 
+            "status", 
+            "created_at", 
+            "updated_at"
+        ]
+        read_only_fields = [
+            "id", 
+            "created_at", 
+            "updated_at"
+        ]
+    
+    def update(self, instance, validated_data):
+        features_data = validated_data.pop("features", None)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        if features_data is not None:
+            instance.features.set(features_data)
+        return instance

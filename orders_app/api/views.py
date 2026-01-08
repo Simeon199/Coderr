@@ -3,7 +3,7 @@ from offers_app.models import OfferDetail
 from profile_app.models import CustomerProfile, BusinessProfile
 from rest_framework import generics
 from rest_framework import status
-from .serializers import OrderListSerializers
+from .serializers import OrderListSerializers, SingleOrderSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -32,10 +32,9 @@ class OrderListView(generics.ListCreateAPIView):
         try:
             customer_user = request.user
             customer_profile = CustomerProfile.objects.get(user=customer_user)
-        except CustomerProfile.DoesNotExist: #
+        except CustomerProfile.DoesNotExist: 
             return Response({"error": "Customer profile not found for user"}, status=status.HTTP_400_BAD_REQUEST)
-        # Get the business user from offer_detail (via the offer relationship)
-        business_user = offer_detail.user  # Uses the @property we added
+        business_user = offer_detail.user  
         
         if not business_user:
             return Response({"error": "No user associated with this offer detail"}, status=status.HTTP_400_BAD_REQUEST)
@@ -65,4 +64,10 @@ class OrderListView(generics.ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)        
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
+class SingleOrderView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Order.objects.all()
+    serializer_class = SingleOrderSerializer
+    permission_classes = [IsAuthenticated]       
