@@ -26,7 +26,15 @@ class OfferDetailCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OfferDetail
-        fields = ['id', 'title', 'revisions', 'delivery_time_in_days', 'price', 'features', 'offer_type']
+        fields = [
+            'id', 
+            'title', 
+            'revisions', 
+            'delivery_time_in_days', 
+            'price', 
+            'features', 
+            'offer_type'
+        ]
         read_only_fields = ['id']
 
 
@@ -35,7 +43,13 @@ class OfferCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Offer
-        fields = ['id', 'title', 'image', 'description', 'details']
+        fields = [
+            'id', 
+            'title', 
+            'image', 
+            'description', 
+            'details'
+        ]
         read_only_fields = ['id']
 
     def validate_details(self, value):
@@ -74,8 +88,28 @@ class OfferListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Offer
-        fields = ['id', 'user', 'title', 'image', 'description', 'created_at', 'updated_at', 'details', 'min_price', 'min_delivery_time', 'user_details']
-        read_only_fields = ['id', 'created_at', 'updated_at', 'min_price', 'min_delivery_time', 'user_details', 'details']
+        fields = [
+            'id', 
+            'user', 
+            'title', 
+            'image', 
+            'description', 
+            'created_at', 
+            'updated_at', 
+            'details', 
+            'min_price', 
+            'min_delivery_time', 
+            'user_details'
+        ]
+        read_only_fields = [
+            'id', 
+            'created_at', 
+            'updated_at', 
+            'min_price', 
+            'min_delivery_time', 
+            'user_details', 
+            'details'
+        ]
 
 
 class SingleOfferSerializer(serializers.ModelSerializer):
@@ -84,8 +118,27 @@ class SingleOfferSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Offer
-        fields = ['id', 'title', 'image', 'description', 'created_at', 'updated_at', 'details', 'min_price', 'min_delivery_time', 'user_details'] 
-        read_only_fields = ['id', 'created_at', 'updated_at', 'min_price', 'min_delivery_time', 'details', 'user_details']
+        fields = [
+            'id', 
+            'title', 
+            'image', 
+            'description', 
+            'created_at', 
+            'updated_at', 
+            'details', 
+            'min_price', 
+            'min_delivery_time', 
+            'user_details'
+        ] 
+        read_only_fields = [
+            'id', 
+            'created_at', 
+            'updated_at', 
+            'min_price', 
+            'min_delivery_time', 
+            'details', 
+            'user_details'
+        ]
 
     def get_user_details(self, obj):
         if obj.user:
@@ -108,7 +161,14 @@ class SingleOfferUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Offer
-        fields = ['id', 'title', 'image', 'description', 'details', 'user_details']
+        fields = [
+            'id', 
+            'title', 
+            'image', 
+            'description', 
+            'details', 
+            'user_details'
+        ]
         read_only_fields = ['id']
         extra_kwargs = {
             'title': {'required': False},
@@ -160,4 +220,12 @@ class SingleOfferDeleteSerializer(serializers.ModelSerializer):
 class SingleOfferDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = OfferDetail
-        fields = ['id', 'title', 'revisions', 'delivery_time_in_days', 'price', 'features', 'offer_type']
+        fields = [
+            'id', 
+            'title', 
+            'revisions', 
+            'delivery_time_in_days', 
+            'price', 
+            'features', 
+            'offer_type'
+        ]

@@ -24,7 +24,6 @@ class BusinessListView(generics.ListAPIView):
     authentication_classes = [TokenAuthentication]
 
     def get_queryset(self):
-        # Return BusinessProfile objects, not User objects
         return BusinessProfile.objects.all()
 
 class CustomerListView(generics.ListAPIView):
@@ -37,7 +36,6 @@ class CustomerListView(generics.ListAPIView):
     authentication_classes = [TokenAuthentication]
 
     def get_queryset(self):
-        # Return CustomerProfile objects, not User objects
         return CustomerProfile.objects.all()
 
 class ProfileView(APIView):
