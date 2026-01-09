@@ -75,8 +75,14 @@ class InProgressOrderCountView(APIView):
     def get(self, request, *args, **kwargs):
         business_user_id = self.kwargs.get('pk')
         in_progress_orders = Order.objects.filter(business_user=business_user_id, status='in_progress')
-        count = in_progress_orders.count()
-        return Response({"count": count})
+        order_count = in_progress_orders.count()
+        return Response({"order_count": order_count})
+    
+class CompletedOrderCountView(APIView):
+    permission_classes = [IsAuthenticated]
 
-class CompletedOrderCountView(generics.GenericAPIView):
-    pass
+    def get(self, request, *args, **kwargs):
+        business_user_id = self.kwargs.get('pk')
+        completed_orders = Order.objects.filter(business_user = business_user_id, status='completed')
+        completed_order_count = completed_orders.count()
+        return Response({"completed_order_count": completed_order_count})
