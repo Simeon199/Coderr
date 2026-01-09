@@ -1,3 +1,4 @@
+from django.db import models
 from orders_app.models import Order
 from offers_app.models import OfferDetail
 from profile_app.models import CustomerProfile, BusinessProfile
@@ -6,6 +7,7 @@ from rest_framework import status
 from .serializers import OrderListSerializers, SingleOrderSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 class OrderListView(generics.ListCreateAPIView):
     queryset = Order.objects.all()
@@ -22,11 +24,6 @@ class OrderListView(generics.ListCreateAPIView):
             offer_detail = OfferDetail.objects.get(id=offer_detail_id)
         except OfferDetail.DoesNotExist:
             return Response({"error": "Invalid offer_detail_id"}, status=status.HTTP_404_NOT_FOUND)
-        
-        if offer_detail.revisions is None or offer_detail.revisions < 0:
-            return Response({"error": "Invalid offer detail: revisions must be a non-negative integer"}, status=status.HTTP_400_BAD_REQUEST)
-        if not offer_detail.title:
-            return Response({"error": "Invalid offer detail: title is required"}, status=status.HTTP_400_BAD_REQUEST)
         
         # Fetch profiles
         try:
@@ -71,3 +68,15 @@ class SingleOrderView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Order.objects.all()
     serializer_class = SingleOrderSerializer
     permission_classes = [IsAuthenticated]       
+
+class InProgressOrderCountView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        business_user_id = self.kwargs.get('pk')
+        in_progress_orders = Order.objects.filter(business_user=business_user_id, status='in_progress')
+        count = in_progress_orders.count()
+        return Response({"count": count})
+
+class CompletedOrderCountView(generics.GenericAPIView):
+    pass

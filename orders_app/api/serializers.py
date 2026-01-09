@@ -92,3 +92,6 @@ class SingleOrderSerializer(serializers.ModelSerializer):
         if features_data is not None:
             instance.features.set(features_data)
         return instance
+
+class CompletedOrderCountSerializer(serializers.ModelSerializer):
+    pass
