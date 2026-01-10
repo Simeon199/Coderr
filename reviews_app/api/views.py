@@ -1,10 +1,12 @@
 from reviews_app.models import Review
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.exceptions import NotFound
 from .serializer import ReviewListSerializer, SingleReviewSerializer
+from .permissions import IsUserCustomer, IsUserCreator
 
 class ReviewListView(generics.ListCreateAPIView):
+    permission_classes = [IsUserCustomer]
+
     def get_serializer_class(self):
         if self.request.method == 'POST':
             return SingleReviewSerializer
@@ -31,4 +33,4 @@ class SingleReviewView(generics.RetrieveUpdateDestroyAPIView):
     
     queryset = Review.objects.all()
     serializer_class = SingleReviewSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsUserCustomer, IsUserCreator]
