@@ -1,9 +1,12 @@
 from reviews_app.models import Review
 from rest_framework import generics
-from .serializer import ReviewListSerializer
+from .serializer import ReviewListSerializer, SingleReviewSerializer
 
 class ReviewListView(generics.ListCreateAPIView):
-    serializer_class = ReviewListSerializer
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return SingleReviewSerializer
+        return ReviewListSerializer
 
     def get_queryset(self):
         queryset = Review.objects.all()

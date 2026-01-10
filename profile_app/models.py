@@ -16,7 +16,7 @@ class AbstractProfile(models.Model):
         abstract = True
 
     def __str__(self):
-        return f"{self.username}"
+        return f"{self.username}{self.user}"
 
 class CustomerProfile(AbstractProfile):
     def __str__(self):
