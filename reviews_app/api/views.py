@@ -1,5 +1,7 @@
 from reviews_app.models import Review
 from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import NotFound
 from .serializer import ReviewListSerializer, SingleReviewSerializer
 
 class ReviewListView(generics.ListCreateAPIView):
@@ -24,3 +26,9 @@ class ReviewListView(generics.ListCreateAPIView):
             queryset = queryset.order_by(ordering)
 
         return queryset
+    
+class SingleReviewView(generics.RetrieveUpdateDestroyAPIView):
+    
+    queryset = Review.objects.all()
+    serializer_class = SingleReviewSerializer
+    permission_classes = [IsAuthenticated]
