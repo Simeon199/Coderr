@@ -2,7 +2,12 @@ from rest_framework import serializers
 from reviews_app.models import Review
 
 class SingleReviewSerializer(serializers.ModelSerializer):
-    pass
+    class Meta:
+        model = Review
+        fields = ['id', 'business_user', 'reviewer', 'rating', 'description', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'business_user', 'reviewer', 'rating', 'description', 'created_at', 'updated_at']
 
 class ReviewListSerializer(serializers.ModelSerializer):
-    pass
+    class Meta:
+        model = Review
+        fields = ['id', 'business_user', 'reviewer', 'rating', 'description', 'created_at', 'updated_at']
