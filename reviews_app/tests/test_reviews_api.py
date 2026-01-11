@@ -173,3 +173,49 @@ class ReviewAPITestCase(APITestCase):
         self.client.force_authenticate(user=other_customer)
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    # Further API tests covering invalid body data
+
+    def test_post_review_invalid_rating(self):
+        """Test that posting a review with an invalid rating returns a 400 status message"""
+        url = reverse('review-list')
+        self.client.force_authenticate(user=self.customer_user)
+        data = {
+            'business_user': self.business_profile.id,
+            'reviewer': self.customer_profile.id,
+            'rating': 'invalid_rating', # Invalid: rating should be an integer
+            'description': 'Great service' 
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_post_review_missing_fields(self):
+        """ Test that posting a review with missing required fields returns a 400 status"""
+        url = reverse('review-list')
+        self.client.force_authenticate(user=self.customer_user)
+        data = {
+            'business_user': self.business_profile.id,
+            # Missing 'reviewer', 'rating' and 'description'
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_patch_review_invalid_rating(self):
+        """Test that updating a review with an invalid rating returns a 400 status"""
+        url = reverse('single-review', kwargs={'pk': self.review.pk})
+        self.client.force_authenticate(user=self.customer_user)
+        data = {
+            'rating': 'invalid_rating', # Invalid: rating should be an integer
+        }
+        response = self.client.patch(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_patch_review_invalid_description(self):
+        """Test that updating a review with an invalid descriptions returns a 400 status"""
+        url = reverse('single-review', kwargs={'pk': self.review.pk})
+        self.client.force_authenticate(user=self.customer_user)
+        data = {
+            'description': 12345, # Invalid: description should be a string
+        }
+        response = self.client.patch(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
