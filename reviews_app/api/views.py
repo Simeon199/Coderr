@@ -1,6 +1,8 @@
 from reviews_app.models import Review
+from profile_app.models import CustomerProfile
 from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.exceptions import ValidationError
 from .serializer import ReviewListSerializer, SingleReviewSerializer
 from .permissions import IsUserWarranted, IsUserCreator
 
@@ -29,6 +31,13 @@ class ReviewListView(generics.ListCreateAPIView):
 
         return queryset
     
+    def perform_create(self, serializer):
+        try:
+            customer_profile = CustomerProfile.objects.get(user=self.request.user)
+        except CustomerProfile.DoesNotExist:
+            raise ValidationError("The user does not have an associated customer profile.")
+        serializer.save(reviewer=customer_profile)
+
 class SingleReviewView(generics.RetrieveUpdateDestroyAPIView):
     
     queryset = Review.objects.all()
