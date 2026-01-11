@@ -1,6 +1,6 @@
 from rest_framework import permissions
 
-class IsUserCustomer(permissions.BasePermission):
+class IsUserWarranted(permissions.BasePermission):
     """
     Custom permission to only allow customers to create reviews.
     """
@@ -15,6 +15,6 @@ class IsUserCustomer(permissions.BasePermission):
 class IsUserCreator(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         user = request.user
-        is_creator = obj.user == user
+        is_creator = obj.reviewer == user
         if request.method == 'PATCH' or request.method == 'DELETE':
             return is_creator
