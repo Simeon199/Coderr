@@ -15,6 +15,6 @@ class IsUserWarranted(permissions.BasePermission):
 class IsUserCreator(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         user = request.user
-        is_creator = obj.reviewer == user
+        is_creator = obj.reviewer.user == user
         if request.method == 'PATCH' or request.method == 'DELETE':
             return is_creator

@@ -1,10 +1,62 @@
 from django.urls import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
+from reviews_app.models import Review
+from profile_app.models import BusinessProfile, CustomerProfile
+from auth_app.models import CustomUser
 
 class ReviewAPITestCase(APITestCase):
+    def setUp(self):
+         # Create test users
+        self.customer_user = CustomUser.objects.create_user(
+            username="testcustomer",
+            password="testpass123",
+            type='customer'
+        )
+
+        self.business_user = CustomUser.objects.create_user(
+            username="testbusiness",
+            password="testpass123",
+            type='business'
+        )
+
+        # Create test instances of BusinessProfile and CustomerProfile
+        self.business_profile = BusinessProfile.objects.create(
+            user=self.business_user,
+            username="test_business",
+            first_name="Test",
+            last_name="Business",
+            location="Test Location",
+            tel="123456789",
+            description="Test Description",
+            working_hours="9 AM - 5 PM"
+        )
+
+        self.customer_profile = CustomerProfile.objects.create(
+            user=self.customer_user,
+            username="test_customer",
+            first_name="Test",
+            last_name="Customer"
+        )
+
+        # Create test reviews
+        self.review = Review.objects.create(
+            business_user=self.business_profile,
+            reviewer=self.customer_profile,
+            rating=4,
+            description="Sehr professioneller Service"
+        )
+
+        Review.objects.create(
+            business_user=self.business_profile,
+            reviewer=self.customer_profile,
+            rating=5,
+            description="Top Qualität und schnelle Lieferung!"
+        )
+
     def test_get_reviews_structure(self):
-        url = reverse('reviews-list')
+        url = reverse('review-list')
+        self.client.force_authenticate(user=self.customer_user)
         response = self.client.get(url, format='json')
 
         # Check if the response status code is 200 OK
@@ -29,3 +81,95 @@ class ReviewAPITestCase(APITestCase):
             self.assertIsInstance(review["description"], str)
             self.assertIsInstance(review["created_at"], str)
             self.assertIsInstance(review["updated_at"], str)
+
+    def test_get_reviews_unauthenticated(self):
+        """Test that unauthenticated users cannot access reviews list"""
+        url = reverse('review-list')
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_get_reviews_authenticated(self):
+        """Test that authenticated users can access reviews list"""
+        url = reverse('review-list')
+        self.client.force_authenticate(user=self.customer_user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_post_review_as_customer(self):
+        """Test that customers can create reviews"""
+        url = reverse('review-list')
+        self.client.force_authenticate(user=self.customer_user)
+        data = {
+            'business_user': self.business_profile.id,
+            'reviewer': self.customer_profile.id,
+            'rating': 5,
+            'description': 'Great service!'
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_post_review_as_business(self):
+        """Test that business users cannot create reviews"""
+        url = reverse('review-list')
+        self.client.force_authenticate(user=self.business_user)
+        data = {
+            'business_user': self.business_profile.id,
+            'reviewer': self.customer_profile.id,
+            'rating': 5,
+            'description': 'Great service!'
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_post_review_unauthenticated(self):
+        """Test that unauthenticated users cannot create reviews"""
+        url = reverse('review-list')
+        data = {
+            'business_user': self.business_profile.id,
+            'reviewer': self.customer_profile.id,
+            'rating': 5,
+            'description': 'Great service!'
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_update_review_as_creator(self):
+        """Test that the creator can update their review"""
+        url = reverse('single-review', kwargs={'pk': self.review.pk})
+        self.client.force_authenticate(user=self.customer_user)
+        data = {'rating': 3, 'description': 'Updated review'}
+        response = self.client.patch(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_update_review_as_non_creator(self):
+        """Test that non-creators cannot update reviews"""
+        # Create another customer
+        other_customer = CustomUser.objects.create_user(
+            username="othercustomer",
+            password="testpass123",
+            type='customer'
+        )
+        url = reverse('single-review', kwargs={'pk': self.review.pk})
+        self.client.force_authenticate(user=other_customer)
+        data = {'rating': 3, 'description': 'Updated review'}
+        response = self.client.patch(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_delete_review_as_creator(self):
+        """Test that the creator can delete their review"""
+        url = reverse('single-review', kwargs={'pk': self.review.pk})
+        self.client.force_authenticate(user=self.customer_user)
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_delete_review_as_non_creator(self):
+        """Test that non-creators cannot delete reviews"""
+        other_customer = CustomUser.objects.create_user(
+            username="othercustomer2",
+            password="testpass123",
+            type='customer'
+        )
+        url = reverse('single-review', kwargs={'pk': self.review.pk})
+        self.client.force_authenticate(user=other_customer)
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
