@@ -215,7 +215,7 @@ class ReviewAPITestCase(APITestCase):
         url = reverse('single-review', kwargs={'pk': self.review.pk})
         self.client.force_authenticate(user=self.customer_user)
         data = {
-            'description': 12345, # Invalid: description should be a string
+            'description': 12345,
         }
         response = self.client.patch(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

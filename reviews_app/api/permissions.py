@@ -1,5 +1,4 @@
 from rest_framework import permissions
-from rest_framework.exceptions import ValidationError
 from profile_app.models import CustomerProfile
 
 class IsUserWarranted(permissions.BasePermission):
@@ -19,8 +18,9 @@ class IsUserCreator(permissions.BasePermission):
         try: 
             customer_profile = CustomerProfile.objects.get(user=request.user)
         except CustomerProfile.DoesNotExist:
-            raise ValidationError("The user does not have an associated customer profile")
-        
+            return False
+                
         is_creator = obj.reviewer == customer_profile
         if request.method == 'PATCH' or request.method == 'DELETE':
             return is_creator
+        return True
