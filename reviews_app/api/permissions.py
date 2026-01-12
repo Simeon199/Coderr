@@ -1,5 +1,7 @@
 from rest_framework import permissions
 from profile_app.models import CustomerProfile
+from reviews_app.models import Review
+from rest_framework import serializers
 
 class IsUserWarranted(permissions.BasePermission):
     """
@@ -10,7 +12,22 @@ class IsUserWarranted(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return user and user.is_authenticated
         if request.method == 'POST':
-            return user.is_authenticated and user.type == 'customer'
+            if not (user.is_authenticated and user.type == 'customer'):
+                return False
+            # Check if the customer has already reviewed the business_user
+            business_user_id = request.data.get('business_user')
+            if business_user_id:
+                try:
+                    customer_profile = CustomerProfile.objects.get(user=user)
+                    existing_review = Review.objects.filter(
+                        reviewer=customer_profile,
+                        business_user=business_user_id
+                    ).exists()
+                    if existing_review:
+                        raise serializers.ValidationError("You have already reviewed this business user.")
+                except CustomerProfile.DoesNotExist:
+                    return False
+            return True
         return True
     
 class IsUserCreator(permissions.BasePermission):

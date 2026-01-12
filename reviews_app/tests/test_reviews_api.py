@@ -97,11 +97,26 @@ class ReviewAPITestCase(APITestCase):
 
     def test_post_review_as_customer(self):
         """Test that customers can create reviews"""
+        # Create a new business for this test to avoid duplicate
+        new_business_user = CustomUser.objects.create_user(
+            username="anotherbusiness",
+            password="testpass123",
+            type='business'
+        )
+        new_business_profile = BusinessProfile.objects.create(
+            user=new_business_user,
+            username="another_business",
+            first_name="Another",
+            last_name="Business",
+            location="Another Location",
+            tel="111111111",
+            description="Another Description",
+            working_hours="8 AM - 4 PM"
+        )
         url = reverse('review-list')
         self.client.force_authenticate(user=self.customer_user)
         data = {
-            'business_user': self.business_profile.id,
-            'reviewer': self.customer_profile.id,
+            'business_user': new_business_profile.id,
             'rating': 5,
             'description': 'Great service!'
         }
@@ -218,4 +233,44 @@ class ReviewAPITestCase(APITestCase):
             'description': 12345,
         }
         response = self.client.patch(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_post_duplicate_review(self):
+        """Test that a customer cannot submit multiple reviews for the same business_user"""
+        # Create a new business user for this test
+        new_business_user = CustomUser.objects.create_user(
+            username="newbusiness",
+            password="testpass123",
+            type='business'
+        )
+        new_business_profile = BusinessProfile.objects.create(
+            user=new_business_user,
+            username="new_business",
+            first_name="New",
+            last_name="Business",
+            location="New Location",
+            tel="987654321",
+            description="New Description",
+            working_hours="10 AM - 6 PM"
+        )
+
+        url = reverse('review-list')
+        self.client.force_authenticate(user=self.customer_user)
+
+        # First review should succeed
+        data = {
+            'business_user': new_business_profile.id,
+            'rating': 5,
+            'description': 'Great Service!'
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Second review for the same business_user should fail
+        data = {
+            'business_user': new_business_profile.id,
+            'rating': 4, 
+            'description': 'Another review for the same business'
+        }
+        response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
