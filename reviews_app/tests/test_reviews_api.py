@@ -274,3 +274,31 @@ class ReviewAPITestCase(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_post_review_with_string_numeric_rating(self):
+        """Posting a review with rating as a numeric string should be rejected."""
+        url = reverse('review-list')
+        self.client.force_authenticate(user=self.customer_user)
+
+        data = {
+            'business_user': self.business_profile.id,
+            'rating': "5",
+            'description': 'Great Service'
+        }
+        response = self.client.post(url, data, format='json')
+
+        # Expect a 400 Bad Request because the rating is not an integer
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_patch_review_with_string_numeric_rating(self):
+        """Patching a review with rating as a numeric string should be rejected."""
+        url = reverse('single-review', kwargs={'pk': self.review.pk})
+        self.client.force_authenticate(user=self.customer_user)
+
+        data = {
+            'rating': "4"
+        }
+        response = self.client.patch(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('rating', response.data)

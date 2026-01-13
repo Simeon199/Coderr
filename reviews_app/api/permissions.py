@@ -34,7 +34,6 @@ class IsUserWarranted(permissions.BasePermission):
             reviewer=profile,
             business_user=business_id
         ).exists()
-    
 
 class IsValidRating(permissions.BasePermission):
     """Reject non-int ratings or out-of-range values."""
