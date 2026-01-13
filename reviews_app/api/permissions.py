@@ -30,6 +30,25 @@ class IsUserWarranted(permissions.BasePermission):
             return True
         return True
     
+class IsValidRating(permissions.BasePermission):
+    """
+    Ensure the rating field is an integer between 1 and 5
+    """
+    def has_permission(self, request, view):
+        if request.method in ('POST', 'PATCH') and 'rating' in request.data:
+            rating = request.data.get('rating')
+            if isinstance(rating, int):
+                rating_int = rating
+            elif isinstance(rating, str) and rating.isdigit():
+                raise serializers.ValidationError({"rating": "Rating must be an integer, not a string."})
+            else:
+                raise serializers.ValidationError({"rating": "Invalid rating format."})
+            if not(1 <= rating_int <= 5):
+                raise serializers.ValidationError(
+                    {"rating": "Rating must be between 1 and 5 inclusive."}
+                )
+        return True
+    
 class IsUserCreator(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         try: 

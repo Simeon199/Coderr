@@ -4,10 +4,10 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import ValidationError
 from .serializer import ReviewListSerializer, SingleReviewSerializer
-from .permissions import IsUserWarranted, IsUserCreator
+from .permissions import IsUserWarranted, IsUserCreator, IsValidRating
 
 class ReviewListView(generics.ListCreateAPIView):
-    permission_classes = [IsUserWarranted]
+    permission_classes = [IsUserWarranted, IsValidRating]
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -42,4 +42,4 @@ class SingleReviewView(generics.RetrieveUpdateDestroyAPIView):
     
     queryset = Review.objects.all()
     serializer_class = SingleReviewSerializer
-    permission_classes = [IsAuthenticated, IsUserWarranted, IsUserCreator]
+    permission_classes = [IsAuthenticated, IsUserWarranted, IsUserCreator, IsValidRating]
