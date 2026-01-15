@@ -212,8 +212,93 @@ class OffersAPITestCase(APITestCase):
 
     # === GET SINGLE OFFER TESTS ===
 
+    def test_get_single_offer_authenticated(self):
+        """Test retrieving a single offer when authenticated"""
+        url = reverse('single-offer', kwargs={'pk': self.offer.pk})
+        self.client.force_authenticate(user=self.customer_user)
+        response = self.client.get(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        required_fields = {"id", "user", "title", "description", "created_at", "updated_at", "min_price", "min_delivery_time"}
+        self.assertTrue(required_fields <= response.data.keys())
+        self.assertTrue(response.data['id'], self.offer.id)
+        self.assertEqual(response.data['user'], self.business_user.id)
+
+    def test_get_single_offer_unauthenticated(self):
+        """Test retrieving a single offer without authentication"""
+        url = reverse('single-offer', kwargs={'pk': self.offer.pk})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
     # === PATCH OFFER TESTS ===
+
+    def test_patch_offer_as_creator(self):
+        """Test creator can update their own offer"""
+        url = reverse('single-offer', kwargs={'pk': self.offer.pk})
+        self.client.force_authenticate(user=self.business_user)
+        data = {
+            "title": "Updated Grafikdesign-Paket",
+            "description": "Updated description"
+        }
+        response = self.client.patch(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['title'], "Updated Grafikdesign-Paket")
+
+    def test_patch_offer_as_non_creator(self):
+        """Test non-creator cannot update offer"""
+        url = reverse('single-offer', kwargs={'pk': self.offer.pk})
+        self.client.force_authenticate(user=self.other_business_user)
+        data = {"title": "Hacked Title"}
+        response = self.client.patch(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_patch_offer_unauthenticated(self):
+        """Test unauthenticated user cannot update offer"""
+        url = reverse('single-offer', kwargs={'pk': self.offer.pk})
+        data = {"title": "Updated"}
+        response = self.client.patch(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     # === DELETE OFFER TESTS ===
 
+    def test_delete_offer_as_creator(self):
+        """Test creator can delete their own offer"""
+        url = reverse('single-offer', kwargs={'pk': self.offer.pk})
+        self.client.force_authenticate(user=self.business_user)
+        response = self.client.delete(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        # Verify offer is deleted
+        offer_exists = Offer.objects.filter(pk=self.offer.pk).exists()
+        self.assertFalse(offer_exists)
+
+    def test_delete_offer_as_non_creator(self):
+        """Test non-creator cannot delete offer"""
+        url = reverse('single-offer', kwargs={'pk': self.offer.pk})
+        self.client.force_authenticate(user=self.business_user)
+        response = self.client.delete(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_delete_offer_unauthenticated(self):
+        """Test unauthenticated user cannot delete offer"""
+        url = reverse('single-offer', kwargs={'pk': self.offer.pk})
+        response = self.client.delete(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
     # === OFFER DETAIL TESTS ===
+
+    def test_get_single_offer_detail_authenticated(self):
+        """Test retrieving offer detail when authenticated"""
+        url=reverse('single-offer-detail', kwargs={'pk': self.offerdetail.pk})
+        self.client.force_authenticate(user=self.business_user)
+        response = self.client.get(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        required_fields = {"id", "title", "revisions", "delivery_time_in_days", "price", "features", "offer_type"}
+        self.assertTrue(required_fields <= response.data.keys())
+
+    def test_get_single_offer_detail_unauthenticated(self):
+        """Test retrieving offer detail without authentication"""
+        url = reverse('single-offer-detail', kwargs={'pk': self.offerdetail.pk})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
