@@ -43,269 +43,177 @@ class OffersAPITestCase(APITestCase):
             last_name = "Doe"
         )
 
-        # UserDetails could in theory replace the imported customer_profile and business_profile
-        # UserDetails.objects.create()
+        # Offer object (new)
+
+        self.offer = Offer.objects.create(
+            title = "Webseite Design",
+            description = "Professionelles Webseite-Design",
+            min_price = 100,
+            min_delivery_time = 7,
+            user=self.business_user # additional line as a foreign key
+        )
 
         self.offerdetail = OfferDetail.objects.create(
-            id = 1,
+            # id = 1,
             title = "Basic Design",
             revisions = 2,
             delivery_time_in_days = 5,
             price = 100,
             features = ["Logo Design", "Visitenkarte"],
-            offer_type = "basic"
+            offer_type = "basic",
+            offer = self.offer # additional line as a foreign key
         )
 
-        self.offer = Offer.objects.create(
-            count = 1,
-            next = "http://127.0.0.1:8000/api/offers/?page=2",
-            previous = "null", # real null value should also be allowed
-            results = [
-                {
-                    "id": 1,
-                    "user": 1,
-                    "title": "Webseite Design",
-                    "image": "null", # real null value should also be allowed
-                    "description": "Professionelles Webseite-Design...",
-                    "created_at": "2024-09-25T10:00:00Z",
-                    "updated_at": "2024-09-28T12:00:00Z"
-                }
-            ],
-            details = [
-                {
-                    "id": 1,
-                    "url": "/offerdetails/1/"
-                },
-                {
-                    "id": 2,
-                    "url": "/offerdetails/2/"
-                },
-                {
-                    "id": 3,
-                    "url": "/offerdetails/3/"
-                }
-            ],
-            min_price=100,
-            min_delivery_time=7,
-            user_details = {
-                "first_name": "John",
-                "last_name": "Doe",
-                "username": "john_doe"
-            }
-        )
+    # === GET OFFERS LIST TESTS === 
 
     def test_get_offers_structure(self):
-        # No authentication required 
+        """Test pagination structure is returned correctly"""
         url = reverse('offers-list')
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIsInstance(response.data, list)
-        required_fields = ["count", "next", "previous", "results", "min_price", "min_delivery_time", "user_details"]
-        for offer in response.data:
-            self.assertTrue(required_fields.issubset(offer.keys()))
 
-            # Check the data types of the fields
-            self.assertIsInstance(offer["count"], int)
-            self.assertIsInstance(offer["next"], str)
-            self.assertIsInstance(offer["previous"], str) # null should also be possible
-            self.assertIsInstance(offer["results"], dict) # The nested key "details" should be assigned to an array
-            self.assertIsInstance(offer["min_price"], int)
-            self.assertIsInstance(offer["min_delivery_time"], int)
-            self.assertIsInstance(offer["user_details"], dict)
+        # Check pagination fields
+        self.assertIn('count', response.data)
+        self.assertIn('next', response.data)
+        self.assertIn('previous', response.data)
+        self.assertIn('results', response.data)
+        self.assertIsInstance(response.data['results'], list)
 
+        # Check offer fields within results
+        if response.data["results"]:
+            offer = response.data['results'][0]
+            required_fields = ["id", "user", "title", "description", "min_price", "min_delivery_time"]
+            self.assertTrue(required_fields <= offer.keys())
 
-    def test_post_offers_as_customer(self):
+    def test_pagination_structure(self):
+        """Test pagination metadata is correct"""
+        url = reverse('offers-list')
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.assertIsInstance(response.data["count"], int)
+        self.assertGreaterEqual(response.data["count"], 0)
+        self.assertIsNone(response.data['previous']) # First page
+
+    def test_filter_by_creator_id(self):
+        """Test filtering offers by creator_id query parameter"""
+        url = reverse('offers-list')
+        response = self.client.get(f'{url}?creator_id={self.business_user.id}', format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.assertEqual(response.data['count'], 2) # Two offers by business_user
+        for offer in response.data["results"]:
+            self.assertEqual(offer["user"], self.business_user.id)
+
+    def test_filter_by_min_price(self):
+        """Test filtering offers by min_price query parameter"""
+        url = reverse('offers-list')
+        response = self.client.get(f'{url}?min_price=200', format='json')
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        for offer in response.data["results"]:
+            self.assertGreaterEqual(offer["min_price"], 200)
+
+    def test_filter_by_max_delivery_time(self):
+        """Test filtering offers by max_delivery_time query parameter"""
+        url=reverse('offers-list')
+        response = self.client.get(f'{url}?max_delivery_time=7', format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        for offer in response.data['results']:
+            self.assertLessEqual(offer['min_delivery_time'], 7)
+
+    def test_search_by_title(self):
+        """Test searching offers by title"""
+        url = reverse('offers-list')
+        response = self.client.get(f'{url}?search=Webseite', format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreater(response.data['count'], 0)
+        for offer in response.data['results']:
+            self.assertIn('Webseite', offer['title'])
+
+    def test_search_by_description(self):
+        """Test searching offers by description"""
+        url = reverse('offers-list')
+        response = self.client.get(f'{url}?search=Professional', format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreater(response.data['count'], 0)
+
+    def test_ordering_by_min_price(self):
+        """Test ordering offers by min_price"""
+        url = reverse('offers-list')
+        response = self.client.get(f'{url}?ordering=min_price', format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        prices = [offer['min_price'] for offer in response.data["results"]]
+        self.assertEqual(prices, sorted(prices))
+
+    def test_combined_filters(self):
+        """Test combining multiple filter parameters"""
+        url = reverse('offers-list')
+        response = self.client.get(
+            f'{url}?creator_id={self.business_user.id}&min_price=100',
+            format='json'
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        for offer in response.data["results"]:
+            self.assertEqual(offer["user"], self.business_user.id)
+            self.assertGreaterEqual(offer["min_price"], 100)
+
+    # === POST OFFERS TESTS ===
+
+    def test_post_offers_as_customer_forbidden(self):
+        """Test customer cannot create offers"""
         url = reverse('offers-list')
         self.client.force_authenticate(user=self.customer_user)
         data = {
             "title": "Grafikdesign-Paket",
-            "image": "null", # Should really be a null value
-            "description": "Ein umfassendes Grafikdesign-Paket für Unternehmen.",
-            "details": [
-                {
-                "title": "Basic Design",
-                "revisions": 2,
-                "delivery_time_in_days": 5,
-                "price": 100,
-                "features": [
-                    "Logo Design",
-                    "Visitenkarte"
-                ],
-                "offer_type": "basic"
-                },
-                {
-                "title": "Standard Design",
-                "revisions": 5,
-                "delivery_time_in_days": 7,
-                "price": 200,
-                "features": [
-                    "Logo Design",
-                    "Visitenkarte",
-                    "Briefpapier"
-                ],
-                "offer_type": "standard"
-                },
-                {
-                "title": "Premium Design",
-                "revisions": 10,
-                "delivery_time_in_days": 10,
-                "price": 500,
-                "features": [
-                    "Logo Design",
-                    "Visitenkarte",
-                    "Briefpapier",
-                    "Flyer"
-                ],
-                "offer_type": "premium"
-                }
-            ]
+            "description": "Ein umfassendes Grafikdesign-Paket für Unternehmen",
+            "details": []
         }
-        response = self.client.get(url, data, format='json')
+        response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_post_offers_as_business(self):
+    def test_post_offers_as_business_user(self):
+        """Test business user can create offers"""
         url = reverse('offers-list')
         self.client.force_authenticate(user=self.business_user)
         data = {
             "title": "Grafikdesign-Paket",
-            "image": "null", # Should really be a null value
-            "description": "Ein umfassendes Grafikdesign-Paket für Unternehmen.",
+            "description": "Ein umfassendes Grafikdesign-Paket für Unternehmen",
             "details": [
                 {
-                "title": "Basic Design",
-                "revisions": 2,
-                "delivery_time_in_days": 5,
-                "price": 100,
-                "features": [
-                    "Logo Design",
-                    "Visitenkarte"
-                ],
-                "offer_type": "basic"
-                },
-                {
-                "title": "Standard Design",
-                "revisions": 5,
-                "delivery_time_in_days": 7,
-                "price": 200,
-                "features": [
-                    "Logo Design",
-                    "Visitenkarte",
-                    "Briefpapier"
-                ],
-                "offer_type": "standard"
-                },
-                {
-                "title": "Premium Design",
-                "revisions": 10,
-                "delivery_time_in_days": 10,
-                "price": 500,
-                "features": [
-                    "Logo Design",
-                    "Visitenkarte",
-                    "Briefpapier",
-                    "Flyer"
-                ],
-                "offer_type": "premium"
+                    "title": "Basic Design",
+                    "revisions": 2,
+                    "delivery_time_in_days": 5,
+                    "price": 100,
+                    "features": ["Logo Design", "Visitenkarte"],
+                    "offer_type": "basic"
                 }
             ]
         }
-        response = self.client.get(url, data, format='json')
+        response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["title"], "Grafikdesign-Paket")
+        self.assertEqual(response.data["user"], self.business_user.id)
 
-    def test_get_single_offer_unauthenticated(self):
-        url = reverse('single-offer')
-        self.client.force_authenticate(user=self.customer_user) # this should also apply to a business_user
-        response = self.client.get(url, format='json')
+    def test_post_offers_unauthenticated(self):
+        """Test unauthenticated user cannot create offers"""
+        url = reverse('offers-list')
+        data = {
+            "title": "Test",
+            "description": "Test",
+            "details": []
+        }
+        response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_get_single_offer_authenticated(self):
-        url = reverse('single-offer')
-        self.client.force_authenticate(user=self.customer_user)
-        response = self.client.get(url, format='json')
-        required_fields = {
-            "id", "user", "title", "image", "description", "created_at", "updated_at", "details", "min_price", "min_delivery_time"
-        }
-        for single_offer in response.data:
-            self.assertTrue(required_fields.issubset(single_offer.keys()))
-            
-            # Check the data types of the fields
-            self.assertIsInstance(single_offer["id"], int)
-            self.assertIsInstance(single_offer["user"], int)
-            self.assertIsInstance(single_offer["image"], str) # Should also apply to a null value
-            self.assertIsInstance(single_offer["description"], str) # Should also apply to an textfield
-            self.assertIsInstance(single_offer["created_at"], int) # Should apply to a Datetime
-            self.assertIsInstance(single_offer["updated_at"], int) # Should apply to a Datetime
-            self.assertIsInstance(single_offer["details"], list) # This list/array contains dictionaries as elements
-            self.assertIsInstance(single_offer["min_price"], int)
-            self.assertIsInstance(single_offer["min_delivery_time"], int)
+    # === GET SINGLE OFFER TESTS ===
 
-        self.assertEqual(response.status_code, status.HTTP_200_OK) # Not sure If I can include this line here 
+    # === PATCH OFFER TESTS ===
 
-    def test_patch_offer_as_non_creator(self):
-        url = reverse('single-offer', kwargs={'pk': self.offer.pk})
-        self.client.force_authenticate(user=self.business_user) # customer_user shouldn't be permitted to patch
-        data = {
-            "title": "Updated Grafikdesign-Paket",
-            "details": [
-                {
-                "title": "Basic Design Updated",
-                "revisions": 3,
-                "delivery_time_in_days": 6,
-                "price": 120,
-                "features": [
-                    "Logo Design",
-                    "Flyer"
-                ],
-                "offer_type": "basic"
-                }
-            ]
-        }
-        response = self.client.patch(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+    # === DELETE OFFER TESTS ===
 
-    def test_patch_offer_as_creator(self):
-        url = reverse('single-offer', kwargs={'pk': self.offer.pk})
-        self.client.force_authenticate(user=self.business_user) # customer_user shouldn't be permitted to patch
-        data = {
-            "title": "Updated Grafikdesign-Paket",
-            "details": [
-                {
-                "title": "Basic Design Updated",
-                "revisions": 3,
-                "delivery_time_in_days": 6,
-                "price": 120,
-                "features": [
-                    "Logo Design",
-                    "Flyer"
-                ],
-                "offer_type": "basic"
-                }
-            ]
-        }
-        response = self.client.get(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_delete_single_offer_as_non_creator(self):
-        url = reverse('offers-list', self.offer.pk)
-        self.client.force_authenticate(user=self.business_user)
-        response = self.client.delete(url, format='json')
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-    # A test which checks an unauthenticated user who is trying to delete an offer is missing
-
-    def test_delete_single_offer_as_creator(self):
-        url = reverse('offers-list', self.offer.pk)
-        self.client.force_authenticate(user=self.business_user)
-        response = self.client.delete(url, format='json')
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-
-    def get_single_offer_details_unauthenticated(self):
-        url = reverse('single-offer-detail', kwargs={'pk': self.offerdetail.pk})
-        response = self.client.get(url, format='json')
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-    def get_single_offer_details_authenticated(self):
-        url = reverse('single-offer-detail', kwargs={'pk': self.offerdetail.pk})
-        self.client.force_authenticate(user=self.business_user)
-        response = self.client.get(url, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+    # === OFFER DETAIL TESTS ===
