@@ -87,11 +87,12 @@ class RegistrationResponseSerializer(serializers.ModelSerializer):
     Returns token, username, email, and user_id.
     """
     token = serializers.SerializerMethodField()
+    user_id = serializers.IntegerField(source='id', read_only=True)
 
     class Meta:
         model = CustomUser
-        fields = ['token', 'username', 'email', 'id']
-        read_only_fields = ['token', 'username', 'email', 'id']
+        fields = ['token', 'username', 'email', 'user_id']
+        read_only_fields = ['token', 'username', 'email', 'user_id']
 
     def get_token(self, obj):
         token = Token.objects.get(user=obj)
