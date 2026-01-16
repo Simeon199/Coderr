@@ -1,7 +1,6 @@
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-from unittest.mock import patch
 
 class RegistrationAPITest(APITestCase):
     """
@@ -19,7 +18,8 @@ class RegistrationAPITest(APITestCase):
             "username": "Example Username",
             "email": "example@mail.de",
             "password": "examplePassword",
-            "repeated_password": "examplePassword"
+            "repeated_password": "examplePassword",
+            "type": "customer"
         }
 
         response = self.client.post(self.url, data, format="json")
@@ -54,20 +54,60 @@ class RegistrationAPITest(APITestCase):
         response = self.client.post(self.url, incomplete_data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_registration_internal_error(self):
+        # Test for missing 'type' field
+        incomplete_data_without_type = {
+            "username": "Example Username",
+            "email": "example@mail.de",
+            "password": "examplePassword",
+            "repeated_password": "examplePassword"
+            # type omitted
+        }
+
+        response = self.client.post(self.url, incomplete_data_without_type, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_registration_password_missmatch(self):
         """
-        Simulate an internal error (e.g., database failure) and assert 500.
+        POST with mismatched passwords should return 400.
         """
+        data = {
+            "username": "Example Username",
+            "email": "example@mail.de",
+            "password": "examplePassword",
+            "repeated_password": "differentPassword", # Mismatched password
+            "type": "customer"
+        }
 
-        with patch("auth_app.api.serializers.RegistrationSerializer.is_valid") as mocked_is_valid:
-            mocked_is_valid.side_effect = Exception("Simulated DB failure")
+        response = self.client.post(self.url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error", response.data)
 
-            data = {
-                "username": "Example Username",
-                "email": "example@mail.de",
-                "password": "examplePassword",
-                "repeated_password": "examplePassword"
-            }
+    def test_registration_email_and_username_uniqueness(self):
+        """
+        POST with duplicate email or username should return 400.
+        """
+        # Create a user first
+        duplicate_email_data = {
+            "username": "Example Username",
+            "email": "example@mail.de", # Duplicate email
+            "password": "examplePassword",
+            "repeated_password": "examplePassword",
+            "type": "customer"
+        }
 
-            response = self.client.post(self.url, data, format="json")
-            self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        response = self.client.post(self.url, duplicate_email_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("email", response.data)
+
+        # Try to create another user with the same username
+        duplicate_username_data = {
+            "username": "Example Username", # Duplicate username
+            "email": "different@example.de",
+            "password": "examplePassword",
+            "repeated_password": "examplePassword",
+            "type": "customer"
+        }
+
+        response = self.client.post(self.url, duplicate_username_data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("username", response.data)

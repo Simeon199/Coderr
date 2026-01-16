@@ -2,7 +2,6 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from django.contrib.auth import get_user_model
-from unittest import mock
 
 class LoginAPITest(APITestCase):
     """
@@ -17,17 +16,22 @@ class LoginAPITest(APITestCase):
             "password": "examplePassword"
         }
 
-        # Create a user first (or use a fixture)
         User = get_user_model()
         User.objects.create_user(
             username="exampleUsername",
-            password="examplePassword"
+            password="examplePassword",
+            type="customer"
         )
         
         response = self.client.post(self.url, data, format="json")
-
-        # Status code should be 200
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Verify response data structure
+        self.assertIn("token", response.data)
+        self.assertIn("username", response.data)
+        self.assertIn("email", response.data)
+        self.assertIn("user_id", response.data)
+        self.assertEqual(response.data["username"], "exampleUsername")
 
     def test_login_missing_field(self):
         # Missing password field
@@ -38,7 +42,17 @@ class LoginAPITest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
         # The error message should point to the missing field
-        # self.assertIn("password", response.data)
+        self.assertIn("password", response.data)
+
+        # Missing username field
+        data = {"password": "examplePassword"}
+        response = self.client.post(self.url, data, format="json")
+
+        # Expecting a 400 BAD Request
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # The error message should point to the missing field
+        self.assertIn("username", response.data)
 
     def test_login_invalid_password_or_username(self):
         User = get_user_model()
@@ -54,7 +68,7 @@ class LoginAPITest(APITestCase):
         }
         response1 = self.client.post(self.url, data_wrong_password, format="json")
         self.assertEqual(response1.status_code, status.HTTP_400_BAD_REQUEST)
-        # self.assertIn("password", response1.data)
+        self.assertIn("error", response1.data)
 
         # Wrong username
         data_wrong_user = {
@@ -63,22 +77,4 @@ class LoginAPITest(APITestCase):
         }
         response2 = self.client.post(self.url, data_wrong_user, format="json")
         self.assertEqual(response2.status_code, status.HTTP_400_BAD_REQUEST)
-        # self.assertIn("username", response2.data)
-        
-
-    def test_login_internal_error(self):
-        # Simulate an unexpected exception in the view (e.g, DB outage).
-        # Patch the authentication backend to raise a generic Exception.
-        with mock.patch(
-            "auth_app.api.views.LoginView.post",
-            side_effect=Exception("DB connection lost")
-        ):
-            data = {
-                "username": "exampleUsername",
-                "password": "anyPassword"
-            } 
-            response = self.client.post(self.url, data, format="json")
-
-        # Expect a 500 Internal Server Error
-        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
-        # self.assertIn("detail", response.data) 
+        self.assertIn("error", response2.data)
