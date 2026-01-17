@@ -1,6 +1,7 @@
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
+from rest_framework.authtoken.models import Token
 from django.contrib.auth import get_user_model
 
 class LoginAPITest(APITestCase):
@@ -17,12 +18,13 @@ class LoginAPITest(APITestCase):
         }
 
         User = get_user_model()
-        User.objects.create_user(
+        user = User.objects.create_user(
             username="exampleUsername",
             password="examplePassword",
             type="customer"
         )
         
+        Token.objects.create(user=user)
         response = self.client.post(self.url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 

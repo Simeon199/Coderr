@@ -15,7 +15,7 @@ class RegistrationAPITest(APITestCase):
         Ensure that a valid POST creates a user and returns the expected payload.
         """
         data = {
-            "username": "Example Username",
+            "username": "ExampleUsername",
             "email": "example@mail.de",
             "password": "examplePassword",
             "repeated_password": "examplePassword",
@@ -44,9 +44,10 @@ class RegistrationAPITest(APITestCase):
         """
         POST without a required field should return 400.
         """
+
+        # Test for missing email
         incomplete_data = {
-            "username": "Example Username",
-            # email omitted
+            "username": "ExampleUsername",
             "password": "examplePassword",
             "repeated_password": "examplePassword"
         }
@@ -56,14 +57,23 @@ class RegistrationAPITest(APITestCase):
 
         # Test for missing 'type' field
         incomplete_data_without_type = {
-            "username": "Example Username",
+            "username": "ExampleUsername",
             "email": "example@mail.de",
             "password": "examplePassword",
             "repeated_password": "examplePassword"
-            # type omitted
         }
 
         response = self.client.post(self.url, incomplete_data_without_type, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Test for missing username
+        incomplete_data_without_username = {
+            "email": "random@mail.com",
+            "password": "ExamplePassword",
+            "repeated_password": "ExamplePassword"
+        }
+
+        response = self.client.post(self.url, incomplete_data_without_username, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_registration_password_missmatch(self):
@@ -71,7 +81,7 @@ class RegistrationAPITest(APITestCase):
         POST with mismatched passwords should return 400.
         """
         data = {
-            "username": "Example Username",
+            "username": "ExampleUsername",
             "email": "example@mail.de",
             "password": "examplePassword",
             "repeated_password": "differentPassword", # Mismatched password
@@ -87,8 +97,20 @@ class RegistrationAPITest(APITestCase):
         POST with duplicate email or username should return 400.
         """
         # Create a user first
+        initial_data = {
+            "username": "InitialUsername",
+            "email": "example@mail.de",
+            "password": "examplePassword",
+            "repeated_password": "examplePassword",
+            "type": "customer"
+        }
+
+        initial_response = self.client.post(self.url, initial_data, format='json')
+        self.assertEqual(initial_response.status_code, status.HTTP_201_CREATED)
+
+        # Try to create antother user with the same email 
         duplicate_email_data = {
-            "username": "Example Username",
+            "username": "ExampleUsername",
             "email": "example@mail.de", # Duplicate email
             "password": "examplePassword",
             "repeated_password": "examplePassword",
@@ -101,7 +123,7 @@ class RegistrationAPITest(APITestCase):
 
         # Try to create another user with the same username
         duplicate_username_data = {
-            "username": "Example Username", # Duplicate username
+            "username": "InitialUsername", # Duplicate username
             "email": "different@example.de",
             "password": "examplePassword",
             "repeated_password": "examplePassword",
