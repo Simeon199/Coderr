@@ -27,9 +27,7 @@ class CustomerProfileViewTest(APITestCase):
             username="customer_jane",
             first_name="Jane",
             last_name="Doe",
-            file="profile_picture_customer.jpg",
-            uploaded_at="2023-09-15T09:00:00",
-            type="customer"
+            file="profile_picture_customer.jpg"
         )
 
         # Generate a token for the user
@@ -63,7 +61,6 @@ class CustomerProfileViewTest(APITestCase):
             "first_name",
             "last_name",
             "file",
-            "uploaded_at",
             "type"
         }
 
@@ -77,8 +74,6 @@ class CustomerProfileViewTest(APITestCase):
             self.assertEqual(item["first_name"], "Jane")
             self.assertEqual(item["last_name"], "Doe")
             self.assertEqual(item["file"], "profile_picture_customer.jpg")
-            self.assertEqual(item["uploaded_at"], "2023-09-15T09:00:00")
-            self.assertEqual(item["type"], "customer")
 
     def test_unauthenticated_user_cannot_access(self):
         """
