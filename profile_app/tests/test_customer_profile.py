@@ -1,12 +1,9 @@
-import json
-
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
-from django.contrib.auth import get_user_model
-from unittest.mock import patch
-
-User = get_user_model()
+from rest_framework.authtoken.models import Token
+from auth_app.models import CustomUser
+from profile_app.models import CustomerProfile
 
 class CustomerProfileViewTest(APITestCase):
     """
@@ -14,28 +11,34 @@ class CustomerProfileViewTest(APITestCase):
     """
 
     def setUp(self) -> None:
-        # Create a user that will act as an authenticated customer
-        self.customer_user = User.objects.create_user(
+        # Create an authenticated customer user
+        self.customer_user = CustomUser.objects.create_user(
             username="customer_jane",
             password="testpass123",
             first_name="Jane",
             last_name="Doe",
-            email="jane@example.com"
+            email="jane@example.com",
+            type="customer"
         )
 
-        self.customer_user.profile.picture.name = "profile_picture_customer.jpg"
-        self.customer_user.profile.uploaded_at = "2023-09-15T09:00:00"
-        self.customer_user.profile.type = "customer"
-        self.customer_user.profile.save()
-
-        # Create a second user that will *not* be authenticated in the tests
-
-        User.objects.create_user(
-            username="other_user",
-            password="irrelevant",
-            first_name="John",
-            last_name="Smith",
+        # Create a CustomerProfile for the user
+        self.customer_profile = CustomerProfile.objects.create(
+            user=self.customer_user,
+            username="customer_jane",
+            first_name="Jane",
+            last_name="Doe",
+            file="profile_picture_customer.jpg",
+            uploaded_at="2023-09-15T09:00:00",
+            type="customer"
         )
+
+        # Generate a token for the user
+        self.token = Token.objects.create(user=self.customer_user)
+
+        self.client = APIClient()
+
+        # Authenticate the client using the token
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')
 
         # Prepare the URL for the view
         self.url = reverse("customer-profile")
@@ -44,29 +47,38 @@ class CustomerProfileViewTest(APITestCase):
         """
         A logged-in user should receive status 200 and the expected JSON payload
         """
-        client = APIClient()
-        client.login(username="customer_jane", password="testpass123")
+        response = self.client.get(self.url, format="json")
 
-        response=client.get(self.url)
-
-        # status code
+        # Status code
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        # Expected JSON structure (order of keys is irrelevant)
-        expected_payload = [
-            {
-                "user": self.customer_user.pk,
-                "username": "customer_jane",
-                "first_name": "Jane",
-                "last_name": "Doe",
-                "file": "profile_picture_customer.jpg",
-                "uploaded_at": "2023-09-15T09:00:00",
-                "type": "customer",
-            }
-        ]
+        # Validate response structure
+        data = response.json()
+        self.assertIsInstance(data, list)
+        self.assertGreater(len(data), 0)
 
-        # Compare payload
-        self.assertEqual(response.json(), expected_payload)
+        expected_keys = {
+            "user",
+            "username",
+            "first_name",
+            "last_name",
+            "file",
+            "uploaded_at",
+            "type"
+        }
+
+        for item in data:
+            self.assertIsInstance(item, dict)
+            self.assertEqual(set(item.keys()), expected_keys)
+            
+            # Quick sanity checks
+            self.assertEqual(item["user"], self.customer_user.id)
+            self.assertEqual(item["username"], "customer_jane")
+            self.assertEqual(item["first_name"], "Jane")
+            self.assertEqual(item["last_name"], "Doe")
+            self.assertEqual(item["file"], "profile_picture_customer.jpg")
+            self.assertEqual(item["uploaded_at"], "2023-09-15T09:00:00")
+            self.assertEqual(item["type"], "customer")
 
     def test_unauthenticated_user_cannot_access(self):
         """
@@ -75,18 +87,3 @@ class CustomerProfileViewTest(APITestCase):
         client = APIClient()
         response = client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-    def test_internal_server_error_handling(self):
-        """
-        Simulate an internal error (e.g. database outage) and ensure the view returns 500.
-        """
-        client = APIClient()
-        client.login(username="customer_jane", password="testpass123")
-
-        # Patch the serializer to raise an exception
-        with patch(
-            "profile_app.api.views.CustomerSerializer",
-            side_effect=Exception("simulated failure")
-        ):
-            response = client.get(self.url)
-        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)

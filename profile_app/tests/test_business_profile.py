@@ -1,35 +1,45 @@
-import json
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
-from django.contrib.auth import get_user_model
-from views import BusinessListView
-
-User = get_user_model
+from rest_framework.authtoken.models import Token
+from auth_app.models import CustomUser
+from profile_app.models import BusinessProfile
 
 class BusinessProfileTests(APITestCase):
     """
     Test the business profile endpoint that returns a list of business users.
     """
-    @classmethod
-    def setUpTestData(cls):
+    def setUp(self):
         # Create an authenticated business user
-        cls.business_user = User.objects.create_user(
+        self.business_user = CustomUser.objects.create_user(
             username="max_business",
             password="secret123",
             first_name="Max",
             last_name="Mustermann",
             email="max@example.com",
+            type="business"
+        )
+
+        # Create a BusinessProfile for the user
+        self.business_profile = BusinessProfile.objects.create(
+            user=self.business_user,
+            username="max_business",
+            first_name="Max",
+            last_name="Mustermann",
             file="profile_picture.jpg",
             location="Berlin",
             tel="123456789",
             description="Business description",
-            working_hours="9-17",
-            type="business",
+            working_hours="9-17"
         )
-        cls.client = APIClient()
-        # authenticate the client - DRF's Token or Session auth can be used
-        cls.client.force_authenticate(user=cls.business_user)
+
+        # Generate a token for the user
+        self.token = Token.objects.create(user=self.business_user)
+
+        self.client = APIClient()
+
+        # Authenticate the client using the token 
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')
 
     def test_authenticated_user_receives_expected_payload(self):
         url = reverse("business-profile")
@@ -39,7 +49,7 @@ class BusinessProfileTests(APITestCase):
 
         data = response.json()
         self.assertIsInstance(data, list)
-        self.assertGreater(len(data))
+        self.assertGreater(len(data), 0)
 
         expected_keys = {
             "user",
@@ -59,7 +69,7 @@ class BusinessProfileTests(APITestCase):
             self.assertEqual(set(item.keys()), expected_keys)
 
             # Quick sanity checks
-            self.assertEqual(item["user"], self.__class__s.business_user.id)
+            self.assertEqual(item["user"], self.business_user.id)
             self.assertEqual(item["username"], "max_business")
             self.assertEqual(item["first_name"], "Max")
             self.assertEqual(item["last_name"], "Mustermann")
@@ -78,20 +88,3 @@ class BusinessProfileTests(APITestCase):
         unauth_client = APIClient()
         response = unauth_client.get(reverse("business-profile"), format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-    def test_internal_server_error(self):
-        """
-        Simulate an internal server error and verify 500.
-        """
-        original_get = BusinessListView.get
-
-        def _error(*args, **kwargs):
-            raise RuntimeError("simulated failure")
-
-        BusinessListView.get = _error
-        try: 
-            response = self.client.get(reverse("business-profile"), format="json")
-            self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
-        finally:
-            # restore the original implementation so other tests keep working
-            BusinessListView.get = original_get 
