@@ -1,11 +1,9 @@
 from django.urls import reverse
 from rest_framework.test import APITestCase
 from rest_framework import status
-from offers_app.models import Offer, OfferDetail, UserDetails
+from offers_app.models import Offer, OfferDetail
 from profile_app.models import BusinessProfile, CustomerProfile
 from auth_app.models import CustomUser
-
-# I should also test whether the response is using the PageNumberPagination the right way
 
 # Testing the query parameters is currently missing in my tests
 
