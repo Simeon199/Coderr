@@ -1,6 +1,6 @@
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APIClient, APITestCase
+from rest_framework.test import APIClient
 from rest_framework.authtoken.models import Token
 from auth_app.models import CustomUser
 from profile_app.models import CustomerProfile
