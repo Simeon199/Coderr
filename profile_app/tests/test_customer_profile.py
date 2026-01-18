@@ -4,38 +4,38 @@ from rest_framework.test import APIClient, APITestCase
 from rest_framework.authtoken.models import Token
 from auth_app.models import CustomUser
 from profile_app.models import CustomerProfile
+from .test_profile_patch import ProfilePatchTests
 
-class CustomerProfileViewTest(APITestCase):
+class CustomerProfileViewTest(ProfilePatchTests):
     """
     Test suite for the customer profile list endpoint.
     """
 
     def setUp(self) -> None:
-        # Create an authenticated customer user
-        self.customer_user = CustomUser.objects.create_user(
-            username="customer_jane",
-            password="testpass123",
-            first_name="Jane",
-            last_name="Doe",
-            email="jane@example.com",
+        # Create an authenticated user
+        self.user = CustomUser.objects.create_user(
+            username="test_user",
+            password="secret123",
+            first_name="Test",
+            last_name="User",
+            email="test@example.com",
             type="customer"
         )
 
-        # Create a CustomerProfile for the user
-        self.customer_profile = CustomerProfile.objects.create(
-            user=self.customer_user,
-            username="customer_jane",
-            first_name="Jane",
-            last_name="Doe",
-            file="profile_picture_customer.jpg"
-        )
-
         # Generate a token for the user
-        self.token = Token.objects.create(user=self.customer_user)
+        self.token = Token.objects.create(user=self.user)
+
+        # Create a CustomerProfile for the user
+        self.profile = CustomerProfile.objects.create(
+            user=self.user,
+            username=self.user.username,
+            first_name=self.user.first_name,
+            last_name=self.user.last_name,
+            file="profile_picture.jpg"
+        )
+        self.customer_profile = self.profile
 
         self.client = APIClient()
-
-        # Authenticate the client using the token
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')
 
         # Prepare the URL for the view
@@ -69,11 +69,11 @@ class CustomerProfileViewTest(APITestCase):
             self.assertEqual(set(item.keys()), expected_keys)
             
             # Quick sanity checks
-            self.assertEqual(item["user"], self.customer_user.id)
-            self.assertEqual(item["username"], "customer_jane")
-            self.assertEqual(item["first_name"], "Jane")
-            self.assertEqual(item["last_name"], "Doe")
-            self.assertEqual(item["file"], "profile_picture_customer.jpg")
+            self.assertEqual(item["user"], self.user.id)
+            self.assertEqual(item["username"], "test_user")
+            self.assertEqual(item["first_name"], "Test")
+            self.assertEqual(item["last_name"], "User")
+            self.assertEqual(item["file"], "profile_picture.jpg")
 
     def test_unauthenticated_user_cannot_access(self):
         """

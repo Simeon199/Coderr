@@ -4,42 +4,26 @@ from rest_framework.test import APITestCase, APIClient
 from rest_framework.authtoken.models import Token
 from auth_app.models import CustomUser
 from profile_app.models import BusinessProfile
+from .test_profile_patch import ProfilePatchTests
 
-class BusinessProfileTests(APITestCase):
+class BusinessProfileTests(ProfilePatchTests):
     """
     Test the business profile endpoint that returns a list of business users.
     """
     def setUp(self):
-        # Create an authenticated business user
-        self.business_user = CustomUser.objects.create_user(
-            username="max_business",
-            password="secret123",
-            first_name="Max",
-            last_name="Mustermann",
-            email="max@example.com",
-            type="business"
-        )
+        super().setUp()
+        # Update the user type to business
+        self.user.type = "business"
+        self.user.save()
 
-        # Create a BusinessProfile for the user
-        self.business_profile = BusinessProfile.objects.create(
-            user=self.business_user,
-            username="max_business",
-            first_name="Max",
-            last_name="Mustermann",
-            file="profile_picture.jpg",
-            location="Berlin",
-            tel="123456789",
-            description="Business description",
-            working_hours="9-17"
-        )
-
-        # Generate a token for the user
-        self.token = Token.objects.create(user=self.business_user)
-
-        self.client = APIClient()
-
-        # Authenticate the client using the token 
-        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')
+        # Update the BusinessProfile for the user
+        self.business_profile = self.profile
+        self.business_profile.file = "profile_picture.jpg"
+        self.business_profile.location = "Berlin"
+        self.business_profile.tel = "123456789"
+        self.business_profile.description = "Business description"
+        self.business_profile.working_hours = "9-17"
+        self.business_profile.save()
 
     def test_authenticated_user_receives_expected_payload(self):
         url = reverse("business-profile")
@@ -69,10 +53,10 @@ class BusinessProfileTests(APITestCase):
             self.assertEqual(set(item.keys()), expected_keys)
 
             # Quick sanity checks
-            self.assertEqual(item["user"], self.business_user.id)
-            self.assertEqual(item["username"], "max_business")
-            self.assertEqual(item["first_name"], "Max")
-            self.assertEqual(item["last_name"], "Mustermann")
+            self.assertEqual(item["user"], self.user.id)
+            self.assertEqual(item["username"], "test_user")
+            self.assertEqual(item["first_name"], "Test")
+            self.assertEqual(item["last_name"], "User")
             self.assertEqual(item["file"], "profile_picture.jpg")
             self.assertEqual(item["location"], "Berlin")
             self.assertEqual(item["tel"], "123456789")

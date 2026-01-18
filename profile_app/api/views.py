@@ -59,7 +59,7 @@ class ProfileView(APIView):
                 profile = CustomerProfile.objects.get(user=user_obj)
                 serializer = CustomerSerializer(profile)
             return Response(serializer.data)
-        except (BusinessProfile.DoesNotExist, CustomerProfile.DoesNotExist):
+        except (CustomUser.DoesNotExist, BusinessProfile.DoesNotExist, CustomerProfile.DoesNotExist):
             return Response(
                 {'detail': 'Profile not found'},
                 status=status.HTTP_404_NOT_FOUND
@@ -68,9 +68,18 @@ class ProfileView(APIView):
     def patch(self, request, user=None):
         """
         Handle PATCH requests to update the authenticated user's profile.
+        Only the user themselves can update their own profile.
         """
         try:
             user_obj = CustomUser.objects.get(pk=user)
+            
+            # Check if the requesting user is the owner of the profile
+            if request.user.id != user_obj.id:
+                return Response(
+                    {'detail': 'You do not have permission to update this profile.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
             if user_obj.type == 'business':
                 profile = BusinessProfile.objects.get(user=user_obj)
                 serializer = BusinessProfileUpdateSerializer(profile, data=request.data, partial=True)
