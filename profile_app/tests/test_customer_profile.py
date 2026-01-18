@@ -4,9 +4,9 @@ from rest_framework.test import APIClient, APITestCase
 from rest_framework.authtoken.models import Token
 from auth_app.models import CustomUser
 from profile_app.models import CustomerProfile
-from .test_profile_patch import ProfilePatchTests
+from .test_generic_user_profile import ProfileTests
 
-class CustomerProfileViewTest(ProfilePatchTests):
+class CustomerProfileViewTest(ProfileTests):
     """
     Test suite for the customer profile list endpoint.
     """

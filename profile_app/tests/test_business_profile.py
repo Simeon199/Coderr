@@ -4,9 +4,9 @@ from rest_framework.test import APITestCase, APIClient
 from rest_framework.authtoken.models import Token
 from auth_app.models import CustomUser
 from profile_app.models import BusinessProfile
-from .test_profile_patch import ProfilePatchTests
+from .test_generic_user_profile import ProfileTests
 
-class BusinessProfileTests(ProfilePatchTests):
+class BusinessProfileTests(ProfileTests):
     """
     Test the business profile endpoint that returns a list of business users.
     """
