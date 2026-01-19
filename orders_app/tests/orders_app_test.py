@@ -253,3 +253,70 @@ class OrdersAPITestCase(APITestCase):
         self.client.force_authenticate(user=self.business_profile)
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    # === PATCH SINGLE ORDERS ===
+
+    def test_update_status_for_authenticated_business_user(self):
+        """Test that an authenticated business user can update the status of an order"""
+        url = reverse('single-order', kwargs={'pk': self.order.pk})
+        self.client.force_authenticate(user=self.business_profile)
+        data = {
+            "status": "completed"
+        }
+        response = self.client.patch(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.status, "completed")
+
+    def test_update_status_failed_because_of_false_choices(self):
+        """Test that updating the status with invalid choices fails"""
+        url = reverse('single-order', kwargs={'pk': self.order.pk})
+        self.client.force_authenticate(user=self.business_profile)
+        data = {
+            "status": "invalid_status"
+        }
+        response = self.client.patch(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_status_for_unauthenticated_user_fails(self):
+        """Test that unauthenticated users cannot update the status of an order"""
+        url = reverse('single-order', kwargs={'pk': self.order.pk})
+        data = {
+            "status": "completed"
+        }        
+        response = self.client.patch(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_update_status_for_authenticated_customer_user_is_not_permitted(self):
+        """Test that authenticated customer users cannot uopdate the status of an order"""
+        url = reverse('single-order', kwargs={'pk': self.order.pk})
+        self.client.force_authenticate(user=self.customer_profile)
+        data = {
+            "status": "completed"
+        }
+        response = self.client.patch(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_update_status_failed_because_given_id_wasnt_found(self):
+        """Test that updating the status of a non-existent order fails"""
+        url = reverse('single-order', kwargs={'pk': 9999})
+        self.client.force_authenticate(user=self.business_profile)
+        data = {
+            "status": "completed"
+        }
+        response = self.client.patch(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    # === DELETE SINGLE ORDERS ===
+
+    def test_order_deletion_successfull_for_admin_user(self):
+        pass
+
+    def test_order_deletion_failed_for_unauthenticated_user(self):
+        pass
+
+    def test_order_deletion_failed_because_user_is_no_admin(self):
+        pass
+
+    def test_order_deletion_failed_because_it_wasnt_found(self):
+        pass
