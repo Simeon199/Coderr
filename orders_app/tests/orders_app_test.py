@@ -102,7 +102,7 @@ class OrdersAPITestCase(APITestCase):
 
         # Following problem: We need to connect both customer_profile and business_profile to a customuser object!
 
-        Order.objects.create(
+        self.order = Order.objects.create(
             customer_user = self.customer_profile, 
             business_user = self.business_profile, 
             title = self.offerdetail.title,
@@ -166,3 +166,90 @@ class OrdersAPITestCase(APITestCase):
         self.client.force_authenticate(user=self.user)
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    # === POST ORDERS TESTS ===
+
+    def test_post_order_as_authenticated_customer(self):
+        """Checks whether an authenticated customer is able to create a new order"""
+        url = reverse('orders-list')
+        self.client.force_authenticate(user=self.customer_profile)
+        data = {
+            "offer_detail_id": self.offerdetail.pk
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIsInstance(response.data, dict)
+
+        required_fields = {
+            "id", "customer_user", "business_user", "title", "revisions", "delivery_time_in_days", "price", "features", "offer_type", "status", "created_at"
+        }
+
+        for order in response.data:
+            self.assertTrue(required_fields.issubset(order.keys()))
+
+            # Check the data types of the fields
+            self.assertIsInstance(order["id"], int)
+            self.assertIsInstance(order["customer_user"], int)
+            self.assertIsInstance(order["business_user"], int)
+            self.assertIsInstance(order["title"], str)
+            self.assertIsInstance(order["revisions"], int)
+            self.assertIsInstance(order["delivery_time_in_days"], int)
+            self.assertIsInstance(order["price"], int)
+            self.assertIsInstance(order["features"], list)
+            self.assertIsInstance(order["offer_type"], str)
+            self.assertIsInstance(order["status"], str)
+            self.assertIsInstance(order["created_at"], str)
+
+    def test_post_order_as_unauthenticated_user(self):
+        url = reverse('orders-list')
+        data = {
+            "offer_detail_id": self.offerdetail.pk
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_post_orders_as_authenticated_business_user(self):
+        url = reverse('orders-list')
+        self.client.force_authenticate(user=self.business_profile)
+        data = {
+            "offer_detail_id": self.offerdetail.pk
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    # === GET SINGLE ORDERS TEST ===
+
+    def test_get_order_count_for_given_business_user(self):
+        url = reverse('in-progress-order-count', kwargs={'pk': self.business_profile.user})
+        self.client.force_authenticate(user=self.business_profile)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_order_count_fails_for_unauthenticated_user(self):
+        url = reverse('in-progress-order-count', kwargs={'pk': self.business_profile.user})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_requested_business_user_for_order_count_doesnt_exit(self):
+        """Test a 404 is returned when the requested business user does not exist"""
+        url = reverse('in-progress-order-count', kwargs={'pk': 9999}) # Non-existent user ID
+        self.client.force_authenticate(user=self.business_profile)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_completed_order_count_for_given_business_user(self):
+        url = reverse('completed-order-count', kwargs={'pk': self.business_profile.user})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_completed_order_count_fails_for_unauthenticated_user(self):
+        url = reverse('completed-order-count', kwargs={'pk': self.business_profile.user})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_requested_business_user_for_completed_order_count_doesnt_exit(self):
+        """Test that a 404 is returned when the requested business user does not exist"""
+        url = reverse('completed-order-count', kwargs={'pk': 9999})
+        self.client.force_authenticate(user=self.business_profile)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
