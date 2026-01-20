@@ -43,7 +43,15 @@ class Order(models.Model):
     price = models.IntegerField(default=0)
     features = models.ManyToManyField(OrderFeatures, related_name='order_features', blank=True)
     offer_type = models.CharField(max_length=50)
-    status = models.CharField(max_length=50, default='in_progress')
+    status = models.CharField(
+        max_length=50,
+        choices=[
+            ('in_progress', 'In Progress'),
+            ('completed', 'Completed'),
+            ('cancelled', 'Cancelled')
+        ],
+        default='in_progress'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
