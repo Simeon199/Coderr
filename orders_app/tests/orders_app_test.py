@@ -19,6 +19,17 @@ class OrdersAPITestCase(APITestCase):
             type="business" # Default type; can be overwritten in child classes
         )
 
+        self.admin_user = CustomUser.objects.create_user(
+            username="admin_user",
+            password="admin_password",
+            first_name="Admin",
+            last_name="User",
+            email="admin@testmail.com",
+            type="admin",
+            is_staff=True,
+            is_superuser=True
+        )
+
         # Generate a token for the user
         self.token = Token.objects.create(user=self.user)
 
@@ -310,13 +321,29 @@ class OrdersAPITestCase(APITestCase):
     # === DELETE SINGLE ORDERS ===
 
     def test_order_deletion_successfull_for_admin_user(self):
-        pass
-
+        """Test that an admin user can successfully delete an order"""
+        self.client.force_authenticate(user=self.admin_user)
+        url=reverse('single-order', kwargs={'pk': self.order.pk})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(Order.objects.filter(pk=self.order.pk).exists())
+    
     def test_order_deletion_failed_for_unauthenticated_user(self):
-        pass
+        """Test that unauthenticated users cannot delete an order"""
+        url = reverse('single-order', kwargs={'pk': self.order.pk})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_order_deletion_failed_because_user_is_no_admin(self):
-        pass
+        """Test that non-admin users cannot delete an order"""
+        self.client.force_authenticate(user=self.customer_profile)
+        url = reverse('single-order', kwargs={'pk': self.order.pk})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_order_deletion_failed_because_it_wasnt_found(self):
-        pass
+        """Test that deleting a non-existent order fails"""
+        self.client.force_authenticate(user=self.admin_user)
+        url = reverse('single-order', kwargs={'pk': 9999})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
