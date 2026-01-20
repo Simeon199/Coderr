@@ -173,7 +173,9 @@ class OrdersAPITestCase(APITestCase):
     def test_get_orders_unauthenticated(self):
         """Test that unauthenticated users cannot access the orders list"""
         url = reverse('orders-list')
-        response = self.client.get(url, format='json')
+        unauthenticated_client = APIClient()
+        response = unauthenticated_client.patch(url, format='json')
+        # response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_get_orders_authenticated(self):
@@ -193,6 +195,7 @@ class OrdersAPITestCase(APITestCase):
             "offer_detail_id": self.offerdetail.pk
         }
         response = self.client.post(url, data, format='json')
+        print(f"response data is: {response.data}")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIsInstance(response.data, dict)
 
@@ -221,7 +224,9 @@ class OrdersAPITestCase(APITestCase):
         data = {
             "offer_detail_id": self.offerdetail.pk
         }
-        response = self.client.post(url, data, format='json')
+        unauthenticated_client = APIClient()
+        # response = self.client.post(url, data, format='json')
+        response = unauthenticated_client.patch(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_post_orders_as_authenticated_business_user(self):
@@ -243,7 +248,9 @@ class OrdersAPITestCase(APITestCase):
 
     def test_get_order_count_fails_for_unauthenticated_user(self):
         url = reverse('in-progress-order-count', kwargs={'pk': self.business_profile.user})
-        response = self.client.get(url, format='json')
+        unauthenticated_client = APIClient()
+        response = unauthenticated_client.get(url, format='json')
+        # response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_requested_business_user_for_order_count_doesnt_exit(self):
@@ -260,7 +267,9 @@ class OrdersAPITestCase(APITestCase):
 
     def test_get_completed_order_count_fails_for_unauthenticated_user(self):
         url = reverse('completed-order-count', kwargs={'pk': self.business_profile.user})
-        response = self.client.get(url, format='json')
+        unauthenticated_user = APIClient()
+        response = unauthenticated_user.get(url, format='json')
+        # response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_requested_business_user_for_completed_order_count_doesnt_exit(self):
@@ -297,10 +306,11 @@ class OrdersAPITestCase(APITestCase):
     def test_update_status_for_unauthenticated_user_fails(self):
         """Test that unauthenticated users cannot update the status of an order"""
         url = reverse('single-order', kwargs={'pk': self.order.pk})
+        unauthenticated_client = APIClient()
         data = {
             "status": "completed"
         }        
-        response = self.client.patch(url, data, format='json')
+        response = unauthenticated_client.patch(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_update_status_for_authenticated_customer_user_is_not_permitted(self):
@@ -336,7 +346,9 @@ class OrdersAPITestCase(APITestCase):
     def test_order_deletion_failed_for_unauthenticated_user(self):
         """Test that unauthenticated users cannot delete an order"""
         url = reverse('single-order', kwargs={'pk': self.order.pk})
-        response = self.client.delete(url)
+        unauthenticated_client = APIClient()
+        response = unauthenticated_client.delete(url)
+        # response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_order_deletion_failed_because_user_is_no_admin(self):

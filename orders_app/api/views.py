@@ -5,6 +5,7 @@ from profile_app.models import CustomerProfile, BusinessProfile
 from rest_framework import generics
 from rest_framework import status
 from .serializers import OrderListSerializers, SingleOrderSerializer
+from .permissions import IsUserOfTypeBusiness
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -67,7 +68,14 @@ class OrderListView(generics.ListCreateAPIView):
 class SingleOrderView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Order.objects.all()
     serializer_class = SingleOrderSerializer
-    permission_classes = [IsAuthenticated]       
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [IsAuthenticated()]
+        elif self.request.method == 'PATCH':
+            return [IsUserOfTypeBusiness()]
+        else:
+            return super().get_permissions()
 
 class InProgressOrderCountView(APIView):
     permission_classes = [IsAuthenticated]
