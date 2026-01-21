@@ -39,6 +39,18 @@ class IsUserMemberOfStaff(permissions.BasePermission):
     """
 
     def has_permission(self, request, view):
-        # Ensure the user is authenticated first
         user = request.user
         return user.is_authenticated and getattr(user, "is_staff", False)
+    
+class IsAdminOrSuperuser(permissions.BasePermission):
+    """
+    Allow access only to users that are either marked as `is_staff`
+    or have the Django super-user flag (`is_superuser`).
+    """
+
+    def has_permission(self, request, view):
+        user = request.user
+        return (
+            user.is_authenticated and 
+            (getattr(user, "is_superuser", False) or getattr(user, "is_staff", False))
+        )

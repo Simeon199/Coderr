@@ -5,7 +5,7 @@ from profile_app.models import CustomerProfile, BusinessProfile
 from rest_framework import generics
 from rest_framework import status
 from .serializers import OrderListSerializers, SingleOrderSerializer
-from .permissions import IsUserOfTypeBusiness
+from .permissions import IsUserOfTypeBusiness, IsAdminOrSuperuser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -31,7 +31,7 @@ class OrderListView(generics.ListCreateAPIView):
             customer_user = request.user
             customer_profile = CustomerProfile.objects.get(user=customer_user)
         except CustomerProfile.DoesNotExist: 
-            return Response({"error": "Customer profile not found for user"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Customer profile not found for user"}, status=status.HTTP_403_FORBIDDEN)
         business_user = offer_detail.user  
         
         if not business_user:
@@ -74,6 +74,8 @@ class SingleOrderView(generics.RetrieveUpdateDestroyAPIView):
             return [IsAuthenticated()]
         elif self.request.method == 'PATCH':
             return [IsUserOfTypeBusiness()]
+        elif self.request.method == 'DELETE':
+            return [IsAdminOrSuperuser()]
         else:
             return super().get_permissions()
 
@@ -82,6 +84,11 @@ class InProgressOrderCountView(APIView):
 
     def get(self, request, *args, **kwargs):
         business_user_id = self.kwargs.get('pk')
+        if not BusinessProfile.objects.filter(user__id=business_user_id).exists():
+            return Response(
+                {"detail": "Business profile not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
         in_progress_orders = Order.objects.filter(business_user=business_user_id, status='in_progress')
         order_count = in_progress_orders.count()
         return Response({"order_count": order_count})
@@ -91,6 +98,11 @@ class CompletedOrderCountView(APIView):
 
     def get(self, request, *args, **kwargs):
         business_user_id = self.kwargs.get('pk')
+        if not BusinessProfile.objects.filter(user__id=business_user_id).exists():
+            return Response(
+                {"detail": "Business profile not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
         completed_orders = Order.objects.filter(business_user = business_user_id, status='completed')
         completed_order_count = completed_orders.count()
         return Response({"completed_order_count": completed_order_count})

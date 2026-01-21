@@ -336,7 +336,7 @@ class OrdersAPITestCase(APITestCase):
         self.client.force_authenticate(user=self.admin_user)
         url=reverse('single-order', kwargs={'pk': self.order.pk})
         response = self.client.delete(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(Order.objects.filter(pk=self.order.pk).exists())
     
     def test_order_deletion_failed_for_unauthenticated_user(self):
