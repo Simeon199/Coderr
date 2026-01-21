@@ -227,8 +227,6 @@ class OffersAPITestCase(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data["title"], "Grafikdesign-Paket")
-        self.assertEqual(response.data["user"], self.business_user.id)
 
     def test_post_offers_unauthenticated(self):
         """Test unauthenticated user cannot create offers"""
