@@ -97,8 +97,8 @@ class OffersAPITestCase(APITestCase):
         # Check offer fields within results
         if response.data["results"]:
             offer = response.data['results'][0]
-            required_fields = ["id", "user", "title", "description", "min_price", "min_delivery_time"]
-            self.assertTrue(required_fields <= offer.keys())
+            required_fields = {"id", "user", "title", "description", "min_price", "min_delivery_time"}
+            self.assertTrue(set(required_fields) <= set(offer.keys()))
 
     def test_pagination_structure(self):
         """Test pagination metadata is correct"""
@@ -127,7 +127,7 @@ class OffersAPITestCase(APITestCase):
         
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         for offer in response.data["results"]:
-            self.assertGreaterEqual(offer["min_price"], 200)
+            self.assertGreaterEqual(int(offer["min_price"]), 200)
 
     def test_filter_by_max_delivery_time(self):
         """Test filtering offers by max_delivery_time query parameter"""
@@ -175,7 +175,7 @@ class OffersAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         for offer in response.data["results"]:
             self.assertEqual(offer["user"], self.business_user.id)
-            self.assertGreaterEqual(offer["min_price"], 100)
+            self.assertGreaterEqual(int(offer["min_price"]), 100)
 
     # === POST OFFERS TESTS ===
 
@@ -249,7 +249,7 @@ class OffersAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         required_fields = {"id", "user", "title", "description", "created_at", "updated_at", "min_price", "min_delivery_time"}
-        self.assertTrue(required_fields <= response.data.keys())
+        self.assertTrue(set(required_fields) <= set(response.data.keys()))
         self.assertTrue(response.data['id'], self.offer.id)
         self.assertEqual(response.data['user'], self.business_user.id)
 

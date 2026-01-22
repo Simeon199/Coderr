@@ -19,10 +19,22 @@ class AbstractProfile(models.Model):
         return f"{self.username}{self.user}"
 
 class CustomerProfile(AbstractProfile):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='customer_profile'
+    )
+
     def __str__(self):
         return f"{self.user.username}"
 
 class BusinessProfile(AbstractProfile):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='business_profile'     
+    )
+    
     location = models.CharField(max_length=100, blank=True)
     tel = models.CharField(max_length=20, blank=True)
     description = models.TextField(blank=True)
