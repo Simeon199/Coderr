@@ -8,8 +8,6 @@ from offers_app.models import Offer
 from profile_app.models import BusinessProfile
 
 User = get_user_model()
-# from base_info_app.models import BaseInfo
-# from base_info_app.api.serializers import BaseInfoSerializer
 
 class BaseInfoAPITestCase(TestCase):
     def setUp(self):
@@ -35,26 +33,3 @@ class BaseInfoAPITestCase(TestCase):
         self.assertEqual(data['average_rating'], 4.5)
         self.assertEqual(data['business_profile_count'], 1)
         self.assertEqual(data['offer_count'], 1)
-
-    #     self.client = APIClient()
-    #     self.base_info = BaseInfo.objects.create(
-    #         review_count = 10,
-    #         average_rating = 4.5,
-    #         business_profile_count = 5,
-    #         offer_count = 3
-    #     )
-    #     self.url = reverse('base-info')
-
-    # def test_base_info_serializer(self):
-    #     serializer = BaseInfoSerializer(isinstance=self.base_info)
-    #     data = serializer.data
-    #     self.assertEqual(data['review_count'], 10)
-    #     self.assertEqual(data['average_rating'], 4.5)
-    #     self.assertEqual(data['business_profile_count'], 5)
-    #     self.assertEqual(data['offer_count'], 20)
-
-    # def test_base_info_list_view(self):
-    #     response = self.client.get(self.url)
-    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
-    #     self.assertEqual(len(response.data), 1)
-    #     self.assertEqual(response.data[0]['review_count'], 10)
