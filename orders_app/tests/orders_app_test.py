@@ -202,21 +202,20 @@ class OrdersAPITestCase(APITestCase):
             "id", "customer_user", "business_user", "title", "revisions", "delivery_time_in_days", "price", "features", "offer_type", "status", "created_at"
         }
 
-        for order in response.data:
-            self.assertTrue(required_fields.issubset(order.keys()))
+        self.assertTrue(required_fields.issubset(response.data.keys()))
 
-            # Check the data types of the fields
-            self.assertIsInstance(order["id"], int)
-            self.assertIsInstance(order["customer_user"], int)
-            self.assertIsInstance(order["business_user"], int)
-            self.assertIsInstance(order["title"], str)
-            self.assertIsInstance(order["revisions"], int)
-            self.assertIsInstance(order["delivery_time_in_days"], int)
-            self.assertIsInstance(order["price"], int)
-            self.assertIsInstance(order["features"], list)
-            self.assertIsInstance(order["offer_type"], str)
-            self.assertIsInstance(order["status"], str)
-            self.assertIsInstance(order["created_at"], str)
+        # Check the data types of the fields
+        self.assertIsInstance(response.data["id"], int)
+        self.assertIsInstance(response.data["customer_user"], int)
+        self.assertIsInstance(response.data["business_user"], int)
+        self.assertIsInstance(response.data["title"], str)
+        self.assertIsInstance(response.data["revisions"], int)
+        self.assertIsInstance(response.data["delivery_time_in_days"], int)
+        self.assertIsInstance(response.data["price"], int)
+        self.assertIsInstance(response.data["features"], list)
+        self.assertIsInstance(response.data["offer_type"], str)
+        self.assertIsInstance(response.data["status"], str)
+        self.assertIsInstance(response.data["created_at"], str)
 
     def test_post_order_as_unauthenticated_user(self):
         url = reverse('orders-list')
@@ -239,13 +238,13 @@ class OrdersAPITestCase(APITestCase):
     # === GET SINGLE ORDERS TEST ===
 
     def test_get_order_count_for_given_business_user(self):
-        url = reverse('in-progress-order-count', kwargs={'pk': self.business_profile.user})
-        self.client.force_authenticate(user=self.business_user.pk)
+        url = reverse('in-progress-order-count', kwargs={'pk': self.business_profile.user.pk})
+        self.client.force_authenticate(user=self.business_user)
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_order_count_fails_for_unauthenticated_user(self):
-        url = reverse('in-progress-order-count', kwargs={'pk': self.business_profile.user})
+        url = reverse('in-progress-order-count', kwargs={'pk': self.business_profile.user.pk})
         unauthenticated_client = APIClient()
         response = unauthenticated_client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -258,12 +257,12 @@ class OrdersAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_get_completed_order_count_for_given_business_user(self):
-        url = reverse('completed-order-count', kwargs={'pk': self.business_profile.user})
+        url = reverse('completed-order-count', kwargs={'pk': self.business_profile.user.pk})
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_completed_order_count_fails_for_unauthenticated_user(self):
-        url = reverse('completed-order-count', kwargs={'pk': self.business_profile.user})
+        url = reverse('completed-order-count', kwargs={'pk': self.business_profile.user.pk})
         unauthenticated_user = APIClient()
         response = unauthenticated_user.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
