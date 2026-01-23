@@ -23,7 +23,7 @@ class OffersListView(generics.ListCreateAPIView):
         
         # Filter by creator_id
         creator_id = self.request.query_params.get('creator_id')
-        if creator_id is not None:
+        if creator_id is not None and creator_id.strip():
             queryset = queryset.filter(user_id=creator_id)
 
         # Filter by min_price
