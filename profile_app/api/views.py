@@ -8,7 +8,9 @@ from .serializer import(
     BusinessSerializer,
     CustomerSerializer,
     BusinessProfileUpdateSerializer,
-    CustomerProfileUpdateSerializer
+    BusinessProfileDetailSerializer,
+    CustomerProfileUpdateSerializer,
+    CustomerProfileDetailSerializer
 )
 from auth_app.models import CustomUser
 from profile_app.models import BusinessProfile, CustomerProfile
@@ -54,10 +56,12 @@ class ProfileView(APIView):
             user_obj = CustomUser.objects.get(pk=user)
             if user_obj.type == 'business':
                 profile = BusinessProfile.objects.get(user=user_obj)
-                serializer = BusinessSerializer(profile)
+                serializer = BusinessProfileDetailSerializer(profile)
+                # serializer = BusinessSerializer(profile)
             else:
                 profile = CustomerProfile.objects.get(user=user_obj)
-                serializer = CustomerSerializer(profile)
+                serializer = CustomerProfileDetailSerializer(profile)
+                # serializer = CustomerSerializer(profile)
             return Response(serializer.data)
         except (CustomUser.DoesNotExist, BusinessProfile.DoesNotExist, CustomerProfile.DoesNotExist):
             return Response(
@@ -89,7 +93,12 @@ class ProfileView(APIView):
             
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data)
+                if user_obj.type == 'business':
+                    detail_serializer = BusinessProfileDetailSerializer(profile)
+                else:
+                    detail_serializer = CustomerProfileDetailSerializer(profile)
+                return Response(detail_serializer.data)
+                # return Response(serializer.data)
             else: 
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except(BusinessProfile.DoesNotExist, CustomerProfile.DoesNotExist):
