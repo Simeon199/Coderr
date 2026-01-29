@@ -10,6 +10,10 @@ class CustomUser(AbstractUser):
         ('customer', 'Customer'),
         ('business', 'Business')
     )
+    # === New fields added to the user model ===
+    username = models.CharField(max_length=150, unique=True)
+    email = models.EmailField(unique=True)
+    
     type = models.CharField(max_length=10, choices=TYPE_CHOICES, default='customer')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
