@@ -20,8 +20,6 @@ class OrderListView(generics.ListCreateAPIView):
         if not offer_detail_id:
             return Response({"error": "offer_detail_id is required"}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            offer_detail_all = OfferDetail.objects.all()
-            print(f"offer_detail_all: {offer_detail_all}")
             offer_detail = OfferDetail.objects.get(id=offer_detail_id)
         except OfferDetail.DoesNotExist:
             return Response({"error": "Invalid offer_detail_id"}, status=status.HTTP_404_NOT_FOUND)

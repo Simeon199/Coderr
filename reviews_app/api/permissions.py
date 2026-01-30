@@ -29,17 +29,6 @@ class IsUserWarranted(permissions.BasePermission):
         return user.is_authenticated and getattr(user, "type", None) == "customer"
     
     def _has_reviewed(self, user, business_id: int) -> bool:
-        # try:
-        #     profile = CustomerProfile.objects.get(user=user.pk)
-        # except CustomerProfile.DoesNotExist:
-        #     return False
-        
-        # Resolve business_id: allow numeric PK or username slug
-        # if isinstance(business_id, int) or (isinstance(business_id, str) and business_id.isdigit()):
-        #     lookup = {"business_user__id": int(business_id)}
-        # else:
-        #     lookup = {"business_user__username": business_id}   
-        # return Review.objects.filter(reviewer=profile, **lookup).exists()
         try:
             profile = CustomerProfile.objects.get(user=user)
         except CustomerProfile.DoesNotExist:

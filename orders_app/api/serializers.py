@@ -1,14 +1,40 @@
 from rest_framework import serializers
 from orders_app.models import Order, OrderFeatures
+from profile_app.models import BusinessProfile, CustomerProfile
 
 class SingleOrderDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderFeatures
         fields = ['feature']
 
+class BusinessProfileNestedSerializer(serializers.ModelSerializer):
+    """Nested serializer for BusinessProfile"""
+    user_id = serializers.IntegerField(source='user.id', read_only=True)
+
+    class Meta:
+        model = BusinessProfile
+
+class CustomerProfileNestedSerializer(serializers.ModelSerializer):
+    """Nested serializer for CustomerProfile"""
+    user_id = serializers.IntegerField(source='user.id', read_only=True)
+
+    class Meta:
+        model = CustomerProfile
+        fields = ['user_id', 'first_name', 'last_name', 'username']
+
 class OrderListSerializers(serializers.ModelSerializer):
-    features = SingleOrderDetailSerializer(many=True)
+    # features = SingleOrderDetailSerializer(many=True)
+    # customer_user = serializers.CharField(source="customer_user.user.id", read_only=True)
+    # business_user = serializers.CharField(source="business_user.user.id", read_only=True)
     
+    business_user = BusinessProfileNestedSerializer(read_only=True)
+    customer_user = CustomerProfileNestedSerializer(read_only=True)
+    features = serializers.SlugRelatedField(
+        many=True,
+        slug_field='feature',
+        queryset=OrderFeatures.objects.all()
+    )
+
     class Meta:
         model = Order
         fields = [
@@ -53,7 +79,8 @@ class OrderListSerializers(serializers.ModelSerializer):
         return data
     
 class SingleOrderSerializer(serializers.ModelSerializer):
-
+    business_user = BusinessProfileNestedSerializer(read_only=True)
+    customer_user = CustomerProfileNestedSerializer(read_only=True)
     features = serializers.SlugRelatedField(
         many=True,
         slug_field='feature',

@@ -1,6 +1,6 @@
 from django.db import models
-from auth_app.models import CustomUser
-# from profile_app.models import CustomerProfile, BusinessProfile
+# from auth_app.models import CustomUser
+from profile_app.models import CustomerProfile, BusinessProfile
 from offers_app.models import Offer, OfferDetail
 
 class OrderFeatures(models.Model):
@@ -11,32 +11,32 @@ class OrderFeatures(models.Model):
 
 class Order(models.Model):
     # customer_user = models.ForeignKey(
-    #     CustomerProfile, 
+    #     CustomUser, 
     #     on_delete=models.CASCADE, 
     #     related_name='assigned_customer_profile', 
     #     null=True, 
     #     blank=True
     # )
     # business_user = models.ForeignKey(
-    #     BusinessProfile, 
+    #     CustomUser, 
     #     on_delete=models.CASCADE, 
     #     related_name='assigned_business_profile', 
     #     null=True, 
     #     blank=True
     # )
     customer_user = models.ForeignKey(
-        CustomUser, 
+        CustomerProfile, 
         on_delete=models.CASCADE, 
         related_name='assigned_customer_profile', 
-        null=True, 
-        blank=True
+        blank=True, 
+        null=True
     )
     business_user = models.ForeignKey(
-        CustomUser, 
+        BusinessProfile, 
         on_delete=models.CASCADE, 
-        related_name='assigned_business_profile', 
-        null=True, 
-        blank=True
+        related_name='assigned_business_profile',  
+        blank=True,
+        null=True
     )
     offers = models.ForeignKey(
         Offer, 
