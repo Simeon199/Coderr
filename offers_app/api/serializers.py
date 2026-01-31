@@ -37,6 +37,23 @@ class OfferDetailCreateSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id']
 
+    def validate_revisions(self, value):
+        # Convert -1 and negative values to 0
+        if value is not None and value < 0:
+            return 0
+        return value
+    
+    def validate_delivery_time_in_days(self, value):
+        if value is not None and value < 0:
+            return 0
+        return value
+
+    # def validate_revisions(self, value):
+    #     """If the incoming revisions is a negative number (e.g., -1), raise a validation error."""
+    #     if value is not None and value < 0:
+    #         return None
+    #     return value
+
 
 class OfferCreateSerializer(serializers.ModelSerializer):
     details = OfferDetailCreateSerializer(source='offer_details', many=True)
@@ -183,7 +200,7 @@ class SingleOfferUpdateSerializer(serializers.ModelSerializer):
         representation.pop('min_price', None)
         representation.pop('min_delivery_time', None)
         return representation
-    
+
     def update(self, instance, validated_data):
         # Update basic offer fields
         for attr, value in validated_data.items():
@@ -212,6 +229,16 @@ class SingleOfferUpdateSerializer(serializers.ModelSerializer):
             instance.min_delivery_time = min((d.delivery_time_in_days for d in instance.offer_details.all() if d.delivery_time_in_days), default=None)
             instance.save()
         return instance
+    
+    # def validate(self, attrs):
+    #     """
+    #     Delegate to the nested serializer's validator.
+    #     """
+    #     details_data = attrs.get('offer_details')
+    #     if details_data:
+    #         for detail in details_data:
+    #             pass
+    #     return attrs
 
 class SingleOfferDeleteSerializer(serializers.ModelSerializer):
     class Meta:
