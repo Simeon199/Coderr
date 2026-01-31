@@ -13,6 +13,7 @@ class BusinessProfileNestedSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BusinessProfile
+        # fields = ['user_id', 'first_name', 'last_name', 'username', 'location', 'tel']
 
 class CustomerProfileNestedSerializer(serializers.ModelSerializer):
     """Nested serializer for CustomerProfile"""
@@ -23,10 +24,6 @@ class CustomerProfileNestedSerializer(serializers.ModelSerializer):
         fields = ['user_id', 'first_name', 'last_name', 'username']
 
 class OrderListSerializers(serializers.ModelSerializer):
-    # features = SingleOrderDetailSerializer(many=True)
-    # customer_user = serializers.CharField(source="customer_user.user.id", read_only=True)
-    # business_user = serializers.CharField(source="business_user.user.id", read_only=True)
-    
     business_user = BusinessProfileNestedSerializer(read_only=True)
     customer_user = CustomerProfileNestedSerializer(read_only=True)
     features = serializers.SlugRelatedField(
@@ -119,3 +116,21 @@ class SingleOrderSerializer(serializers.ModelSerializer):
         if features_data is not None:
             instance.features.set(features_data)
         return instance
+
+
+# PROPOSED CHANGE (commented):
+# After moving common name fields into `CustomUser`, the nested
+# profile serializers can source those fields directly from the
+# related user. Example below shows a minimal nested serializer
+# for orders that exposes `first_name` and `last_name` via the
+# profile's `user` relation.
+#
+# class BusinessProfileNestedSerializer(serializers.ModelSerializer):
+#     user_id = serializers.IntegerField(source='user.id', read_only=True)
+#     first_name = serializers.CharField(source='user.first_name', read_only=True)
+#     last_name = serializers.CharField(source='user.last_name', read_only=True)
+#     username = serializers.CharField(source='user.username', read_only=True)
+#
+#     class Meta:
+#         model = BusinessProfile
+#         fields = ['user_id', 'first_name', 'last_name', 'username']
