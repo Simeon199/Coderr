@@ -20,7 +20,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"username\": \"kevin_costner\",\r\n    \"email\": \"kevin.costner@testmail.com\",\r\n    \"password\": \"Hallo123?\",\r\n    \"repeated_password\": \"Hallo123?\",\r\n    \"type\": \"customer\"\r\n}",
+              "raw": "{\r\n    \"username\": \"max_mustermann\",\r\n    \"email\": \"max.mustermann@testmail.com\",\r\n    \"password\": \"Hallo123?\",\r\n    \"repeated_password\": \"Hallo123?\",\r\n    \"type\": \"customer\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -90,7 +90,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Token {{TARANTINO_BUSINESS_TOKEN}}",
+                "value": "Token {{JOHN_DOE_BUSINESS}}",
                 "type": "text"
               }
             ],
@@ -126,7 +126,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Token {{TRAVOLTA_CUSTOMER_TOKEN}}",
+                "value": "Token {{MAX_MUSTERMANN_CUSTOMER}}",
                 "type": "text"
               }
             ],
@@ -159,13 +159,13 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Token {{TARANTINO_BUSINESS_TOKEN}}",
+                "value": "Token {{JOHN_DOE_BUSINESS}}",
                 "type": "text"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"first_name\": \"Quentin\",\r\n    \"last_name\": \"Tarantino\",\r\n    \"location\": \"Knoxville\",\r\n    \"tel\": \"123456789\",\r\n    \"description\": \"An american director\",\r\n    \"working_hours\": \"10-18\",\r\n    \"email\": \"quentin.tarantino@testmail.com\"\r\n}",
+              "raw": "{\r\n    \"first_name\": \"Jonathan\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -173,14 +173,14 @@
               }
             },
             "url": {
-              "raw": "{{BASE_URL}}/api/profile/4/",
+              "raw": "{{BASE_URL}}/api/profile/3/",
               "host": [
                 "{{BASE_URL}}"
               ],
               "path": [
                 "api",
                 "profile",
-                "4",
+                "3",
                 ""
               ]
             }
@@ -200,7 +200,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Token {{TRAVOLTA_CUSTOMER_TOKEN}}",
+                "value": "Token {{MAX_MUSTERMANN_CUSTOMER}}",
                 "type": "text"
               }
             ],
@@ -388,7 +388,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "TOKEN {{TARANTINO_BUSINESS_TOKEN}}",
+                "value": "TOKEN {{MAX_MUSTERMANN_CUSTOMER}}",
                 "type": "text"
               }
             ],
@@ -397,14 +397,14 @@
               "raw": ""
             },
             "url": {
-              "raw": "{{BASE_URL}}/api/offerdetails/27/",
+              "raw": "{{BASE_URL}}/api/offerdetails/1/",
               "host": [
                 "{{BASE_URL}}"
               ],
               "path": [
                 "api",
                 "offerdetails",
-                "27",
+                "1",
                 ""
               ]
             }
@@ -429,7 +429,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "TOKEN {{TARANTINO_BUSINESS_TOKEN}}",
+                "value": "TOKEN {{JOHN_DOE_BUSINESS}}",
                 "type": "text"
               }
             ],
@@ -654,7 +654,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "TOKEN {{TARANTINO_BUSINESS_TOKEN}}",
+                "value": "TOKEN {{MAX_MUSTERMANN_CUSTOMER}}",
                 "type": "text"
               }
             ],
@@ -686,7 +686,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "TOKEN {{TRAVOLTA_CUSTOMER_TOKEN}}",
+                "value": "TOKEN {{MAX_MUSTERMANN_CUSTOMER}}",
                 "type": "text"
               }
             ],
