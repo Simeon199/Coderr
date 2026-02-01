@@ -37,16 +37,15 @@ class OfferDetailCreateSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id']
 
-    def validate_revisions(self, value):
-        # Convert -1 and negative values to 0
-        if value is not None and value < 0:
-            return 0
-        return value
+    # def validate_revisions(self, value):
+    #     if value is not None and value < 0:
+    #         return 0
+    #     return value
     
-    def validate_delivery_time_in_days(self, value):
-        if value is not None and value < 0:
-            return 0
-        return value
+    # def validate_delivery_time_in_days(self, value):
+    #     if value is not None and value < 0:
+    #         return 0
+    #     return value
 
     # def validate_revisions(self, value):
     #     """If the incoming revisions is a negative number (e.g., -1), raise a validation error."""

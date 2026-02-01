@@ -72,10 +72,11 @@ class BusinessProfileUpdateSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         user_data = {}
         business_data = {}
+        validated_user = validated_data.get("user", {})
 
         for field in ["first_name", "last_name", "file"]:
-            if field in validated_data:
-                user_data[field] = validated_data.pop(field)
+            if field in validated_user:
+                user_data[field] = validated_user.pop(field)
 
         for field in ["location", "tel", "description", "working_hours"]:
             if field in validated_data:
