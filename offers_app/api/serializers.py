@@ -130,7 +130,7 @@ class OfferListSerializer(serializers.ModelSerializer):
 
 class SingleOfferSerializer(serializers.ModelSerializer):
     details = OfferDetailListSerializer(source='offer_details', many=True, read_only=True)
-    user_details = serializers.SerializerMethodField()
+    user_details = UserDetailsSerializer(source='user', read_only=True)
 
     class Meta:
         model = Offer
@@ -175,6 +175,7 @@ class SingleOfferSerializer(serializers.ModelSerializer):
 class SingleOfferUpdateSerializer(serializers.ModelSerializer):
     details = OfferDetailCreateSerializer(source='offer_details', many=True, required=False)
     user_details = ProfileUpdateSerializer(required=False)
+    # user_detials = UserDetailsSerializer(required=False)
 
     class Meta:
         model = Offer
