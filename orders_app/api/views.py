@@ -1,5 +1,5 @@
 from django.db import models
-from orders_app.models import Order
+from orders_app.models import Order, OrderFeatures
 from offers_app.models import OfferDetail
 from profile_app.models import CustomerProfile, BusinessProfile
 from rest_framework import generics
@@ -42,7 +42,13 @@ class OrderListView(generics.ListCreateAPIView):
         
 
         # Derive order data from the offer (updated to include profiles and links)
-        features_data = [{'feature': feature} for feature in offer_detail.features or []]
+        features_data = []
+        for feature_name in (offer_detail.features or []):
+            feature_obj, created = OrderFeatures.objects.get_or_create(feature=feature_name)
+            features_data.append(feature_obj.id)
+                
+        # features_data = [feature for feature in offer_detail.features or []]
+        # features_data = [{'feature': feature} for feature in offer_detail.features or []]
 
         order_data = {
             'customer_user': customer_profile.id,

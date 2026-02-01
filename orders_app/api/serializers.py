@@ -32,11 +32,12 @@ class CustomerProfileNestedSerializer(serializers.ModelSerializer):
 class OrderListSerializers(serializers.ModelSerializer):
     business_user = BusinessProfileNestedSerializer(read_only=True)
     customer_user = CustomerProfileNestedSerializer(read_only=True)
-    features = serializers.SlugRelatedField(
-        many=True,
-        slug_field='feature',
-        queryset=OrderFeatures.objects.all()
-    )
+    features = serializers.PrimaryKeyRelatedField(many=True, queryset=OrderFeatures.objects.all())
+    # features = serializers.SlugRelatedField(
+    #     many=True,
+    #     slug_field='feature',
+    #     queryset=OrderFeatures.objects.all()
+    # )
 
     class Meta:
         model = Order

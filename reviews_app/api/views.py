@@ -1,5 +1,5 @@
 from reviews_app.models import Review
-from profile_app.models import CustomerProfile
+from profile_app.models import CustomerProfile, BusinessProfile
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import ValidationError
@@ -36,7 +36,16 @@ class ReviewListView(generics.ListCreateAPIView):
             customer_profile = CustomerProfile.objects.get(user=self.request.user)
         except CustomerProfile.DoesNotExist:
             raise ValidationError("The user does not have an associated customer profile.")
-        serializer.save(reviewer=customer_profile)
+        
+        # Extract business_user from request data
+        business_user_id = self.request.data.get('business_user')
+        if not business_user_id:
+            raise ValidationError("business_user field is required.")
+        try:
+            business_profile = BusinessProfile.objects.get(user=business_user_id)
+        except BusinessProfile.DoesNotExist:
+            raise ValidationError("The specified business_user does not exist.")
+        serializer.save(reviewer=customer_profile, business_user=business_profile)
 
 class SingleReviewView(generics.RetrieveUpdateDestroyAPIView):
     
