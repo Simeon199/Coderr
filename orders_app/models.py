@@ -10,20 +10,6 @@ class OrderFeatures(models.Model):
         return f"{self.feature}"
 
 class Order(models.Model):
-    # customer_user = models.ForeignKey(
-    #     CustomUser, 
-    #     on_delete=models.CASCADE, 
-    #     related_name='assigned_customer_profile', 
-    #     null=True, 
-    #     blank=True
-    # )
-    # business_user = models.ForeignKey(
-    #     CustomUser, 
-    #     on_delete=models.CASCADE, 
-    #     related_name='assigned_business_profile', 
-    #     null=True, 
-    #     blank=True
-    # )
     customer_user = models.ForeignKey(
         CustomerProfile, 
         on_delete=models.CASCADE, 

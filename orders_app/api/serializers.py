@@ -30,8 +30,8 @@ class CustomerProfileNestedSerializer(serializers.ModelSerializer):
         fields = ['user_id', 'first_name', 'last_name', 'username']
 
 class OrderListSerializers(serializers.ModelSerializer):
-    business_user = BusinessProfileNestedSerializer(read_only=True)
-    customer_user = CustomerProfileNestedSerializer(read_only=True)
+    business_user = serializers.IntegerField(source='business_user.id', read_only=True)
+    customer_user = serializers.IntegerField(source='customer_user.id', read_only=True)
     business_user_id = serializers.IntegerField(write_only=True, required=False)
     customer_user_id = serializers.IntegerField(write_only=True, required=False)
     features = serializers.PrimaryKeyRelatedField(many=True, queryset=OrderFeatures.objects.all())
@@ -68,8 +68,10 @@ class OrderListSerializers(serializers.ModelSerializer):
 
         if business_user_id:
             validated_data['business_user'] = BusinessProfile.objects.get(id=business_user_id)
+            validated_data['business_user_id'] = business_user_id
         if customer_user_id:
             validated_data['customer_user'] = CustomerProfile.objects.get(id=customer_user_id)
+            validated_data['customer_user_id'] = customer_user_id
 
         order = Order.objects.create(**validated_data)
         order.features.set(features)
