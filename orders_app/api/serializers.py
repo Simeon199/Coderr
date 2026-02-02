@@ -60,13 +60,11 @@ class OrderListSerializers(serializers.ModelSerializer):
             "created_at", 
             "updated_at"
         ]
-
+    
     def create(self, validated_data):
-        features_data = validated_data.pop('features', [])
+        features = validated_data.pop('features', [])
         order = Order.objects.create(**validated_data)
-        for feature_data in features_data:
-            feature, created = OrderFeatures.objects.get_or_create(feature=feature_data['feature'])
-            order.features.add(feature)
+        order.features.set(features)
         return order
     
     def to_representation(self, instance):
