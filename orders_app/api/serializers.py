@@ -32,12 +32,9 @@ class CustomerProfileNestedSerializer(serializers.ModelSerializer):
 class OrderListSerializers(serializers.ModelSerializer):
     business_user = BusinessProfileNestedSerializer(read_only=True)
     customer_user = CustomerProfileNestedSerializer(read_only=True)
+    business_user_id = serializers.IntegerField(write_only=True, required=False)
+    customer_user_id = serializers.IntegerField(write_only=True, required=False)
     features = serializers.PrimaryKeyRelatedField(many=True, queryset=OrderFeatures.objects.all())
-    # features = serializers.SlugRelatedField(
-    #     many=True,
-    #     slug_field='feature',
-    #     queryset=OrderFeatures.objects.all()
-    # )
 
     class Meta:
         model = Order
@@ -45,6 +42,8 @@ class OrderListSerializers(serializers.ModelSerializer):
             "id", 
             "customer_user", 
             "business_user", 
+            "customer_user_id", 
+            "business_user_id",
             "title", 
             "revisions", 
             "delivery_time_in_days", 
@@ -62,7 +61,16 @@ class OrderListSerializers(serializers.ModelSerializer):
         ]
     
     def create(self, validated_data):
+        # Pop the IDs if provided
+        business_user_id = validated_data.pop('business_user_id', None)
+        customer_user_id = validated_data.pop('customer_user_id', None)
         features = validated_data.pop('features', [])
+
+        if business_user_id:
+            validated_data['business_user'] = BusinessProfile.objects.get(id=business_user_id)
+        if customer_user_id:
+            validated_data['customer_user'] = CustomerProfile.objects.get(id=customer_user_id)
+
         order = Order.objects.create(**validated_data)
         order.features.set(features)
         return order

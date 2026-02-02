@@ -41,14 +41,10 @@ class OrderListView(generics.ListCreateAPIView):
             return Response({"error": "Business profile not found for offer user"}, status=status.HTTP_400_BAD_REQUEST)
         
 
-        # Derive order data from the offer (updated to include profiles and links)
         features_data = []
         for feature_name in (offer_detail.features or []):
             feature_obj, created = OrderFeatures.objects.get_or_create(feature=feature_name)
             features_data.append(feature_obj.id)
-                
-        # features_data = [feature for feature in offer_detail.features or []]
-        # features_data = [{'feature': feature} for feature in offer_detail.features or []]
 
         order_data = {
             'customer_user': customer_profile.id,
