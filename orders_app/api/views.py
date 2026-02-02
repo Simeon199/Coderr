@@ -47,8 +47,8 @@ class OrderListView(generics.ListCreateAPIView):
             features_data.append(feature_obj.id)
 
         order_data = {
-            'customer_user': customer_profile.id,
-            'business_user': business_profile.id,
+            'customer_user_id': customer_profile.id,
+            'business_user_id': business_profile.id,
             'title': offer_detail.title,
             'revisions': offer_detail.revisions,
             'delivery_time_in_days': offer_detail.delivery_time_in_days,
