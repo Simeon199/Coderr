@@ -27,13 +27,13 @@ class CustomerProfileViewTest(ProfileTests):
 
         # Create a CustomerProfile for the user
         self.profile = CustomerProfile.objects.create(
-            user=self.user,
-            username=self.user.username,
-            first_name=self.user.first_name,
-            last_name=self.user.last_name,
-            file="profile_picture.jpg"
+            user=self.user
         )
         self.customer_profile = self.profile
+
+        # file is stored on CustomUser, not CustomerProfile
+        self.user.file = "profile_picture.jpg"
+        self.user.save()
 
         self.client = APIClient()
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')

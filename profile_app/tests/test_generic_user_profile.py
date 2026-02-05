@@ -17,7 +17,7 @@ class ProfileTests(APITestCase):
             first_name="Test",
             last_name="User",
             email="test@example.com",
-            type="business"  # Default type; can be overridden in child classes
+            type="business" 
         )
 
         # Generate a token for the user
@@ -27,10 +27,6 @@ class ProfileTests(APITestCase):
         if self.user.type == "business":
             self.profile = BusinessProfile.objects.create(
                 user=self.user,
-                username=self.user.username,
-                first_name=self.user.first_name,
-                last_name=self.user.last_name,
-                file="",
                 location="",
                 tel="",
                 description="",
@@ -38,11 +34,7 @@ class ProfileTests(APITestCase):
             )
         else:
             self.profile = CustomerProfile.objects.create(
-                user=self.user,
-                username=self.user.username,
-                first_name=self.user.first_name,
-                last_name=self.user.last_name,
-                file=""
+                user=self.user
             )
 
         self.client = APIClient()
@@ -82,10 +74,6 @@ class ProfileTests(APITestCase):
         # Create a profile for the other user
         BusinessProfile.objects.create(
             user=other_user,
-            username=other_user.username,
-            first_name=other_user.first_name,
-            last_name=other_user.last_name,
-            file="",
             location="",
             tel="",
             description="",
@@ -168,12 +156,12 @@ class ProfileTests(APITestCase):
         self.assertIsNotNone(response.data.get("last_name"))
         self.assertIsNotNone(response.data.get("file"))
 
-        # Verify that the common fields match
+        # Verify that the common fields match (these are stored on CustomUser)
         self.assertEqual(response.data.get("first_name"),
-                         self.profile.first_name if self.profile.first_name else "")
+                         self.user.first_name if self.user.first_name else "")
 
         self.assertEqual(response.data.get("last_name"),
-                         self.profile.last_name if self.profile.last_name else "")
+                         self.user.last_name if self.user.last_name else "")
         
         # For business profiles, verify business-specific fields are not null
         if self.user.type == "business":

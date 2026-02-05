@@ -23,9 +23,6 @@ class ReviewAPITestCase(APITestCase):
         # Create test instances of BusinessProfile and CustomerProfile
         self.business_profile = BusinessProfile.objects.create(
             user=self.business_user,
-            username="test_business",
-            first_name="Test",
-            last_name="Business",
             location="Test Location",
             tel="123456789",
             description="Test Description",
@@ -33,10 +30,7 @@ class ReviewAPITestCase(APITestCase):
         )
 
         self.customer_profile = CustomerProfile.objects.create(
-            user=self.customer_user,
-            username="test_customer",
-            first_name="Test",
-            last_name="Customer"
+            user=self.customer_user
         )
 
         # Create test reviews
@@ -105,9 +99,6 @@ class ReviewAPITestCase(APITestCase):
         )
         new_business_profile = BusinessProfile.objects.create(
             user=new_business_user,
-            username="another_business",
-            first_name="Another",
-            last_name="Business",
             location="Another Location",
             tel="111111111",
             description="Another Description",
@@ -245,9 +236,6 @@ class ReviewAPITestCase(APITestCase):
         )
         new_business_profile = BusinessProfile.objects.create(
             user=new_business_user,
-            username="new_business",
-            first_name="New",
-            last_name="Business",
             location="New Location",
             tel="987654321",
             description="New Description",

@@ -15,12 +15,15 @@ class BusinessProfileTests(ProfileTests):
 
         # Update the BusinessProfile for the user
         self.business_profile = self.profile
-        self.business_profile.file = "profile_picture.jpg"
         self.business_profile.location = "Berlin"
         self.business_profile.tel = "123456789"
         self.business_profile.description = "Business description"
         self.business_profile.working_hours = "9-17"
         self.business_profile.save()
+
+        # file is stored on CustomUser, not BusinessProfile
+        self.user.file = "profile_picture.jpg"
+        self.user.save()
 
     def test_authenticated_user_receives_expected_payload(self):
         url = reverse("business-profile")

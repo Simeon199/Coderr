@@ -37,10 +37,6 @@ class OrdersAPITestCase(APITestCase):
         if self.user.type == "business":
             self.profile = BusinessProfile.objects.create(
                 user=self.user,
-                username=self.user.username,
-                first_name=self.user.first_name,
-                last_name=self.user.last_name,
-                file="",
                 location="",
                 tel="",
                 description="",
@@ -48,11 +44,7 @@ class OrdersAPITestCase(APITestCase):
             )
         else:
             self.profile = CustomerProfile.objects.create(
-                user=self.user,
-                username=self.user.username,
-                first_name=self.user.first_name,
-                last_name=self.user.last_name,
-                file=""
+                user=self.user
             )
 
         self.customer_user = CustomUser.objects.create_user(
@@ -75,10 +67,6 @@ class OrdersAPITestCase(APITestCase):
 
         self.business_profile = BusinessProfile.objects.create(
             user = self.business_user,
-            username = self.business_user.username,
-            first_name = self.business_user.first_name,
-            last_name = self.business_user.last_name,
-            file="",
             location = "Los Angeles",
             tel = "1213456789",
             description = "Description",
@@ -86,11 +74,7 @@ class OrdersAPITestCase(APITestCase):
         )
 
         self.customer_profile = CustomerProfile.objects.create(
-            user = self.customer_user,
-            username = self.customer_user.username,
-            first_name = self.customer_user.first_name,
-            last_name = self.customer_user.last_name,
-            file=""
+            user = self.customer_user
         )
 
         self.offer = Offer.objects.create(

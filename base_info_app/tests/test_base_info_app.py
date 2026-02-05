@@ -20,7 +20,7 @@ class BaseInfoAPITestCase(TestCase):
         # Create test data
         Review.objects.create(rating=4)
         Review.objects.create(rating=5)
-        BusinessProfile.objects.create(user=self.user, username="test_business")
+        BusinessProfile.objects.create(user=self.user)
         Offer.objects.create(title="Test Offer")
 
     def test_base_info_view(self):

@@ -30,17 +30,11 @@ class OffersAPITestCase(APITestCase):
 
         # Create test instances of BusinessProfile and CustomerProfile
         self.customer_profile = CustomerProfile.objects.create(
-            user = self.customer_user,
-            username = self.customer_user.username,
-            first_name = "John",
-            last_name = "Doe"
+            user = self.customer_user
         )
 
         self.business_profile = BusinessProfile.objects.create(
             user = self.business_user,
-            username = self.business_user.username,
-            first_name = "Jane",
-            last_name = "Doe",
             location = "Los Angeles",
             tel = "1213456789",
             description = "Description",
@@ -49,9 +43,6 @@ class OffersAPITestCase(APITestCase):
 
         self.other_business_profile = BusinessProfile.objects.create(
             user=self.other_business_user,
-            username=self.other_business_user.username,
-            first_name="Other",
-            last_name="Business",
             location="New York",
             tel="1213456780",
             description="Other Business Description",
@@ -65,7 +56,7 @@ class OffersAPITestCase(APITestCase):
             description = "Professionelles Webseite-Design",
             min_price = 100,
             min_delivery_time = 7,
-            user=self.business_user # additional line as a foreign key
+            user=self.business_user 
         )
 
         self.offerdetail = OfferDetail.objects.create(
@@ -76,7 +67,7 @@ class OffersAPITestCase(APITestCase):
             price = 100,
             features = ["Logo Design", "Visitenkarte"],
             offer_type = "basic",
-            offer = self.offer # additional line as a foreign key
+            offer = self.offer 
         )
 
     # === GET OFFERS LIST TESTS === 
@@ -108,7 +99,7 @@ class OffersAPITestCase(APITestCase):
 
         self.assertIsInstance(response.data["count"], int)
         self.assertGreaterEqual(response.data["count"], 0)
-        self.assertIsNone(response.data['previous']) # First page
+        self.assertIsNone(response.data['previous']) 
 
     def test_filter_by_creator_id(self):
         """Test filtering offers by creator_id query parameter"""
@@ -116,7 +107,7 @@ class OffersAPITestCase(APITestCase):
         response = self.client.get(f'{url}?creator_id={self.business_user.id}', format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        self.assertEqual(response.data['count'], 1) # Two offers by business_user
+        self.assertEqual(response.data['count'], 1)
         for offer in response.data["results"]:
             self.assertEqual(offer["user"], self.business_user.id)
 
