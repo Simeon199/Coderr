@@ -28,6 +28,14 @@ class BusinessProfile(models.Model):
         related_name='business_profile'     
     )
 
+    # class Meta:
+    #     constraints = [
+    #         models.CheckConstraint(
+    #             name='user_type_business',
+    #             condition=models.Q(user__type='business')
+    #         )
+    #     ]
+
     # Business-specific fields only
 
     location = models.CharField(max_length=100, blank=True)
