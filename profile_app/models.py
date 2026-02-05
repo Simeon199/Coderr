@@ -9,6 +9,14 @@ class CustomerProfile(models.Model):
         related_name='customer_profile'
     )
 
+    # class Meta:
+    #     constraints = [
+    #         models.CheckConstraint(
+    #             name='user_type_customer',
+    #             condition=models.Q(user__type='customer')
+    #         )
+    #     ]
+
     def __str__(self):
         return f"{self.user.username}"
 

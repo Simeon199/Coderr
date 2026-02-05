@@ -49,10 +49,10 @@ class OrderListView(generics.ListCreateAPIView):
         # customer_profile.user_id and business_profile.user_id relates to right id's    
 
         order_data = {
-            'customer_user': customer_profile.user_id, # customer_profile.id
-            'business_user': business_profile.user_id, # business_profile.id
-            'customer_user_id': customer_profile.id, # originally not there
-            'business_user_id': business_profile.id, # orginally not there
+            'customer_user': customer_profile.id,
+            'business_user': business_profile.id,
+            # 'customer_user_id': customer_profile.id, 
+            # 'business_user_id': business_profile.id, 
             'title': offer_detail.title,
             'revisions': offer_detail.revisions,
             'delivery_time_in_days': offer_detail.delivery_time_in_days,

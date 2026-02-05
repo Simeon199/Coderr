@@ -30,10 +30,8 @@ class CustomerProfileNestedSerializer(serializers.ModelSerializer):
         fields = ['user_id', 'first_name', 'last_name', 'username']
 
 class OrderListSerializers(serializers.ModelSerializer):
-    business_user = serializers.IntegerField(source='business_user.id', read_only=True)
-    customer_user = serializers.IntegerField(source='customer_user.id', read_only=True)
-    business_user_id = serializers.IntegerField(write_only=True, required=False)
-    customer_user_id = serializers.IntegerField(write_only=True, required=False)
+    business_user = serializers.PrimaryKeyRelatedField(queryset=BusinessProfile.objects.all())
+    customer_user = serializers.PrimaryKeyRelatedField(queryset=CustomerProfile.objects.all())
     features = serializers.PrimaryKeyRelatedField(many=True, queryset=OrderFeatures.objects.all())
 
     class Meta:
@@ -42,8 +40,8 @@ class OrderListSerializers(serializers.ModelSerializer):
             "id", 
             "customer_user", 
             "business_user", 
-            "customer_user_id", 
-            "business_user_id",
+            # "customer_user_id", 
+            # "business_user_id",
             "title", 
             "revisions", 
             "delivery_time_in_days", 
@@ -61,25 +59,18 @@ class OrderListSerializers(serializers.ModelSerializer):
         ]
     
     def create(self, validated_data):
-        # Pop the IDs if provided
-        business_user_id = validated_data.pop('business_user_id', None)
-        customer_user_id = validated_data.pop('customer_user_id', None)
         features = validated_data.pop('features', [])
-
-        if business_user_id:
-            validated_data['business_user'] = BusinessProfile.objects.get(id=business_user_id)
-            validated_data['business_user_id'] = business_user_id
-        if customer_user_id:
-            validated_data['customer_user'] = CustomerProfile.objects.get(id=customer_user_id)
-            validated_data['customer_user_id'] = customer_user_id
-
         order = Order.objects.create(**validated_data)
         order.features.set(features)
         return order
     
     def to_representation(self, instance):
-        data = super().to_representation(instance) 
+        data = super().to_representation(instance)
         data['features'] = [f.feature for f in instance.features.all()]
+        if instance.business_user:
+            data['business_user'] = instance.business_user.user.id
+        if instance.customer_user:
+            data['customer_user'] = instance.customer_user.user.id
         return data
     
 class SingleOrderSerializer(serializers.ModelSerializer):
