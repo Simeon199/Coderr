@@ -40,8 +40,6 @@ class OrderListSerializers(serializers.ModelSerializer):
             "id", 
             "customer_user", 
             "business_user", 
-            # "customer_user_id", 
-            # "business_user_id",
             "title", 
             "revisions", 
             "delivery_time_in_days", 
