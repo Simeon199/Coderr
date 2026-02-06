@@ -16,7 +16,7 @@ class CustomUser(AbstractUser):
     type = models.CharField(max_length=10, choices=TYPE_CHOICES, default='customer')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    file = models.CharField(max_length=100, null=True, blank=True)
+    file = models.CharField(max_length=100, default='', blank=True)
 
     class Meta:
         verbose_name = 'User'

@@ -33,6 +33,16 @@ class ReviewAPITestCase(APITestCase):
             user=self.customer_user
         )
 
+        # Create a second customer for the second review
+        self.customer_user_2 = CustomUser.objects.create_user(
+            username="testcustomer2",
+            password="testpass123",
+            type='customer'
+        )
+        self.customer_profile_2 = CustomerProfile.objects.create(
+            user=self.customer_user_2
+        )
+
         # Create test reviews
         self.review = Review.objects.create(
             business_user=self.business_profile,
@@ -43,7 +53,7 @@ class ReviewAPITestCase(APITestCase):
 
         Review.objects.create(
             business_user=self.business_profile,
-            reviewer=self.customer_profile,
+            reviewer=self.customer_profile_2,
             rating=5,
             description="Top Qualität und schnelle Lieferung!"
         )
@@ -97,7 +107,7 @@ class ReviewAPITestCase(APITestCase):
             password="testpass123",
             type='business'
         )
-        new_business_profile = BusinessProfile.objects.create(
+        BusinessProfile.objects.create(
             user=new_business_user,
             location="Another Location",
             tel="111111111",
@@ -107,7 +117,7 @@ class ReviewAPITestCase(APITestCase):
         url = reverse('review-list')
         self.client.force_authenticate(user=self.customer_user)
         data = {
-            'business_user': new_business_profile.id,
+            'business_user': new_business_user.id,
             'rating': 5,
             'description': 'Great service!'
         }
@@ -234,7 +244,7 @@ class ReviewAPITestCase(APITestCase):
             password="testpass123",
             type='business'
         )
-        new_business_profile = BusinessProfile.objects.create(
+        BusinessProfile.objects.create(
             user=new_business_user,
             location="New Location",
             tel="987654321",
@@ -247,7 +257,7 @@ class ReviewAPITestCase(APITestCase):
 
         # First review should succeed
         data = {
-            'business_user': new_business_profile.id,
+            'business_user': new_business_user.id,
             'rating': 5,
             'description': 'Great Service!'
         }
@@ -256,7 +266,7 @@ class ReviewAPITestCase(APITestCase):
 
         # Second review for the same business_user should fail
         data = {
-            'business_user': new_business_profile.id,
+            'business_user': new_business_user.id,
             'rating': 4, 
             'description': 'Another review for the same business'
         }

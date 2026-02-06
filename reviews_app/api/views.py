@@ -45,6 +45,8 @@ class ReviewListView(generics.ListCreateAPIView):
             business_profile = BusinessProfile.objects.get(user=business_user_id)
         except BusinessProfile.DoesNotExist:
             raise ValidationError("The specified business_user does not exist.")
+        if Review.objects.filter(reviewer=customer_profile, business_user=business_profile).exists():
+            raise ValidationError("You have already reviewed this business.")
         serializer.save(reviewer=customer_profile, business_user=business_profile)
 
 class SingleReviewView(generics.RetrieveUpdateDestroyAPIView):

@@ -3,20 +3,6 @@ from auth_app.models import CustomUser
 from profile_app.models import CustomerProfile, BusinessProfile
 
 class Review(models.Model):
-    # business_user = models.ForeignKey(
-    #     CustomUser, 
-    #     on_delete=models.CASCADE, 
-    #     related_name='assigned_business_user', 
-    #     null=True, 
-    #     blank=True
-    # )
-    # reviewer = models.ForeignKey(
-    #     CustomUser, 
-    #     on_delete=models.CASCADE, 
-    #     related_name='assigned_customer_reviewer', 
-    #     null=True, 
-    #     blank=True
-    # )
     business_user = models.ForeignKey(
         BusinessProfile,
         on_delete=models.CASCADE,
@@ -35,6 +21,9 @@ class Review(models.Model):
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ['business_user', 'reviewer']
 
     def __str__(self):
         return f"{self.rating}"

@@ -143,9 +143,10 @@ class CustomerProfileUpdateSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         user_data = {}
+        validated_user = validated_data.get("user", {})
         for field in ["first_name", "last_name", "file"]:
-            if field in validated_data:
-                user_data[field] = validated_data.pop(field)
+            if field in validated_user:
+                user_data[field] = validated_user.pop(field)
 
         for attr, value in user_data.items():
             setattr(instance.user, attr, value)

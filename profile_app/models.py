@@ -9,14 +9,6 @@ class CustomerProfile(models.Model):
         related_name='customer_profile'
     )
 
-    # class Meta:
-    #     constraints = [
-    #         models.CheckConstraint(
-    #             name='user_type_customer',
-    #             condition=models.Q(user__type='customer')
-    #         )
-    #     ]
-
     def __str__(self):
         return f"{self.user.username}"
 
@@ -27,16 +19,6 @@ class BusinessProfile(models.Model):
         on_delete=models.CASCADE,
         related_name='business_profile'     
     )
-
-    # class Meta:
-    #     constraints = [
-    #         models.CheckConstraint(
-    #             name='user_type_business',
-    #             condition=models.Q(user__type='business')
-    #         )
-    #     ]
-
-    # Business-specific fields only
 
     location = models.CharField(max_length=100, blank=True)
     tel = models.CharField(max_length=20, blank=True)

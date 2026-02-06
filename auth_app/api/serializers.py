@@ -105,6 +105,7 @@ class CustomerProfileSerializer(serializers.ModelSerializer):
     user = serializers.IntegerField(source='user.id')
     username = serializers.CharField(source='user.username')
     type = serializers.CharField(source='user.type')
+    file = serializers.CharField(source='user.file', allow_blank=True)
 
     class Meta:
         model = CustomerProfile
@@ -117,6 +118,7 @@ class BusinessProfileSerializer(serializers.ModelSerializer):
     user = serializers.IntegerField(source='user.id')
     username = serializers.CharField(source='user.username')
     type = serializers.CharField(source='user.type')
+    file = serializers.CharField(source='user.file', allow_blank=True)
 
     class Meta:
         model = BusinessProfile
