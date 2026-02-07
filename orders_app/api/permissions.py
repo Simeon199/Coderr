@@ -50,7 +50,4 @@ class IsAdminOrSuperuser(permissions.BasePermission):
 
     def has_permission(self, request, view):
         user = request.user
-        return (
-            user.is_authenticated and 
-            (getattr(user, "is_superuser", False) or getattr(user, "is_staff", False))
-        )
+        return (user.is_authenticated and (getattr(user, "is_superuser", False) or getattr(user, "is_staff", False)))

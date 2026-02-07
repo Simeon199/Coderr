@@ -3,10 +3,19 @@ from offers_app.models import Offer, OfferDetail
 from profile_app.models import CustomerProfile, BusinessProfile
 
 class ProfileUpdateSerializer(serializers.Serializer):
+    """
+    Serializer for updating user profile fields (first_name, last_name)
+    within an offer update request.
+    """
+
     first_name = serializers.CharField(required=False)
     last_name = serializers.CharField(required=False)
 
 class OfferDetailListSerializer(serializers.ModelSerializer):
+    """
+    Read-only serializer for listing offer details with their URL.
+    """
+
     url = serializers.SerializerMethodField()
 
     class Meta:
@@ -15,10 +24,16 @@ class OfferDetailListSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'url']
 
     def get_url(self, obj):
+        """Return the detail URL for the given offer detail."""
         return f"/offerdetails/{obj.id}/"
 
 
 class OfferDetailCreateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for creating and updating offer detail entries.
+    Features are accepted as a list of strings.
+    """
+
     features = serializers.ListField(
         child=serializers.CharField(),
         required=False
@@ -37,24 +52,12 @@ class OfferDetailCreateSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id']
 
-    # def validate_revisions(self, value):
-    #     if value is not None and value < 0:
-    #         return 0
-    #     return value
-    
-    # def validate_delivery_time_in_days(self, value):
-    #     if value is not None and value < 0:
-    #         return 0
-    #     return value
-
-    # def validate_revisions(self, value):
-    #     """If the incoming revisions is a negative number (e.g., -1), raise a validation error."""
-    #     if value is not None and value < 0:
-    #         return None
-    #     return value
-
-
 class OfferCreateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for creating offers with nested offer details.
+    Requires at least three detail entries.
+    """
+
     details = OfferDetailCreateSerializer(source='offer_details', many=True)
 
     class Meta:
@@ -77,6 +80,9 @@ class OfferCreateSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
+        """
+        Create an offer with nested details and calculate price/delivery aggregates.
+        """
         details_data = validated_data.pop('offer_details', [])
         offer = Offer.objects.create(**validated_data)
         
@@ -94,11 +100,19 @@ class OfferCreateSerializer(serializers.ModelSerializer):
         return offer
 
 class UserDetailsSerializer(serializers.Serializer):
+    """
+    Read-only serializer for embedding basic user information in offer responses.
+    """
+
     first_name = serializers.CharField()
     last_name = serializers.CharField()
     username = serializers.CharField()
 
 class OfferListSerializer(serializers.ModelSerializer):
+    """
+    Read-only serializer for listing offers with nested details and user information.
+    """
+
     details = OfferDetailListSerializer(source='offer_details', many=True, read_only=True)
     user_details = UserDetailsSerializer(source='user', read_only=True)
 
@@ -129,6 +143,10 @@ class OfferListSerializer(serializers.ModelSerializer):
 
 
 class SingleOfferSerializer(serializers.ModelSerializer):
+    """
+    Read-only serializer for retrieving a single offer with nested details and user information.
+    """
+
     details = OfferDetailListSerializer(source='offer_details', many=True, read_only=True)
     user_details = UserDetailsSerializer(source='user', read_only=True)
 
@@ -158,6 +176,10 @@ class SingleOfferSerializer(serializers.ModelSerializer):
         ]
 
     def get_user_details(self, obj):
+        """
+        Return first_name, last_name and username for the offer's user,
+        or None if no user is associated.
+        """
         if obj.user:
             if obj.user.type == 'business':
                 profile = obj.user.business_profile
@@ -173,9 +195,13 @@ class SingleOfferSerializer(serializers.ModelSerializer):
         return None
 
 class SingleOfferUpdateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for updating an offer with nested offer details.
+    Supports partial updates of top-level fields and nested details.
+    """
+
     details = OfferDetailCreateSerializer(source='offer_details', many=True, required=False)
     user_details = ProfileUpdateSerializer(required=False)
-    # user_detials = UserDetailsSerializer(required=False)
 
     class Meta:
         model = Offer
@@ -195,57 +221,73 @@ class SingleOfferUpdateSerializer(serializers.ModelSerializer):
         }
 
     def to_representation(self, instance):
+        """
+        Use SingleOfferSerializer for output, excluding user, min_price and min_delivery_time.
+        """
         representation = SingleOfferSerializer(instance).data
         representation.pop('user', None)
         representation.pop('min_price', None)
         representation.pop('min_delivery_time', None)
         return representation
 
-    def update(self, instance, validated_data):
-        # Update basic offer fields
+    def _update_offer_fields(self, instance, validated_data):
+        """
+        Update top-level offer fields, excluding nested offer_details.
+        """
         for attr, value in validated_data.items():
             if attr != 'offer_details':
                 setattr(instance, attr, value)
         instance.save()
 
-        # Handle offer details
+    def _update_or_create_details(self, instance, details_data):
+        """
+        Update existing or create new offer details for the given offer.
+        """
+        for detail_data in details_data:
+            detail_id = detail_data.get('id')
+            if detail_id:
+                detail = instance.offer_details.get(id=detail_id)
+                for attr, value in detail_data.items():
+                    if attr != 'id':
+                        setattr(detail, attr, value)
+                detail.save()
+            else:
+                OfferDetail.objects.create(offer=instance, **detail_data)
+
+    def _recalculate_aggregates(self, instance):
+        """
+        Recalculate min_price and min_delivery_time from all offer details.
+        """
+        details = instance.offer_details.all()
+        instance.min_price = min((d.price for d in details if d.price), default=None)
+        instance.min_delivery_time = min((d.delivery_time_in_days for d in details if d.delivery_time_in_days), default=None)
+        instance.save()
+
+    def update(self, instance, validated_data):
+        """
+        Update offer fields and nested offer details, then recalculate aggregates.
+        """
+        self._update_offer_fields(instance, validated_data)
         details_data = validated_data.get('offer_details')
         if details_data:
-            for detail_data in details_data:
-                detail_id = detail_data.get('id')
-                if detail_id:
-                    # Update existing detail
-                    detail = instance.offer_details.get(id=detail_id)
-                    for attr, value in detail_data.items():
-                        if attr != 'id':
-                            setattr(detail, attr, value)
-                    detail.save()
-                else:
-                    # Create new detail
-                    OfferDetail.objects.create(offer=instance, **detail_data)
-            
-            # Recalculate min_price and min_delivery_time
-            instance.min_price = min((d.price for d in instance.offer_details.all() if d.price), default=None)
-            instance.min_delivery_time = min((d.delivery_time_in_days for d in instance.offer_details.all() if d.delivery_time_in_days), default=None)
-            instance.save()
+            self._update_or_create_details(instance, details_data)
+            self._recalculate_aggregates(instance)
         return instance
-    
-    # def validate(self, attrs):
-    #     """
-    #     Delegate to the nested serializer's validator.
-    #     """
-    #     details_data = attrs.get('offer_details')
-    #     if details_data:
-    #         for detail in details_data:
-    #             pass
-    #     return attrs
 
 class SingleOfferDeleteSerializer(serializers.ModelSerializer):
+    """
+    Empty serializer used for deleting an offer.
+    """
+
     class Meta:
         model = Offer
         fields = []
 
 class SingleOfferDetailSerializer(serializers.ModelSerializer):
+    """
+    Read-only serializer for retrieving a single offer detail entry.
+    """
+
     class Meta:
         model = OfferDetail
         fields = [

@@ -13,11 +13,7 @@ class BaseInfoAPITestCase(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.url = reverse('base-info')
-
-        # Create a user for the BusinessProfile
         self.user = User.objects.create_user(username='test_user', password='test_password')
-
-        # Create test data
         Review.objects.create(rating=4)
         Review.objects.create(rating=5)
         BusinessProfile.objects.create(user=self.user)
@@ -26,8 +22,6 @@ class BaseInfoAPITestCase(TestCase):
     def test_base_info_view(self):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        # Verify response data
         data = response.data
         self.assertEqual(data['review_count'], 2)
         self.assertEqual(data['average_rating'], 4.5)

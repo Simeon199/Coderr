@@ -16,111 +16,115 @@ from auth_app.models import CustomUser
 from profile_app.models import BusinessProfile, CustomerProfile
 from django.shortcuts import get_object_or_404
 
+
 class BusinessListView(generics.ListAPIView):
     """
     Returns a list of all business profiles.
     Only authenticated users are allowed.
     """
+
     serializer_class = BusinessSerializer
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication]
 
     def get_queryset(self):
+        """Return all business profiles."""
         return BusinessProfile.objects.all()
+
 
 class CustomerListView(generics.ListAPIView):
     """
     Returns a list of all customer profiles.
     Only authenticated users are allowed.
     """
+
     serializer_class = CustomerSerializer
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication]
 
     def get_queryset(self):
+        """Return all customer profiles."""
         return CustomerProfile.objects.all()
+
 
 class ProfileView(APIView):
     """
     API view for retrieving and updating individual profiles.
-    Requires the user to be authenticated.
+    Dispatches to the correct profile type (business or customer)
+    based on the user's type field.
     """
+
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication]
 
+    def _get_profile(self, user_obj):
+        """
+        Retrieve the profile instance for the given user.
+        Returns a BusinessProfile or CustomerProfile based on user type.
+        """
+        if user_obj.type == 'business':
+            return get_object_or_404(BusinessProfile, user=user_obj)
+        return get_object_or_404(CustomerProfile, user=user_obj)
+
+    def _get_detail_serializer(self, user_obj, profile):
+        """
+        Return the appropriate detail serializer for the given profile.
+        """
+        if user_obj.type == 'business':
+            return BusinessProfileDetailSerializer(profile)
+        return CustomerProfileDetailSerializer(profile)
+
+    def _get_update_serializer(self, user_obj, profile, data):
+        """
+        Return the appropriate update serializer for the given profile.
+        """
+        if user_obj.type == 'business':
+            return BusinessProfileUpdateSerializer(profile, data=data, partial=True)
+        return CustomerProfileUpdateSerializer(profile, data=data, partial=True)
+
     def get(self, request, user=None):
         """
-        Handle GET requests to retrieve a specific profile by ID.
+        Retrieve a specific profile by user ID.
         """
-        try:
-            user_obj = CustomUser.objects.get(pk=user)
-            if user_obj.type == 'business':
-                profile = BusinessProfile.objects.get(user=user_obj)
-                serializer = BusinessProfileDetailSerializer(profile)
-                # serializer = BusinessSerializer(profile)
-            else:
-                profile = CustomerProfile.objects.get(user=user_obj)
-                serializer = CustomerProfileDetailSerializer(profile)
-                # serializer = CustomerSerializer(profile)
-            return Response(serializer.data)
-        except (CustomUser.DoesNotExist, BusinessProfile.DoesNotExist, CustomerProfile.DoesNotExist):
-            return Response(
-                {'detail': 'Profile not found'},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        
+        user_obj = get_object_or_404(CustomUser, pk=user)
+        profile = self._get_profile(user_obj)
+        serializer = self._get_detail_serializer(user_obj, profile)
+        return Response(serializer.data)
+
     def patch(self, request, user=None):
         """
-        Handle PATCH requests to update the authenticated user's profile.
-        Only the user themselves can update their own profile.
+        Update the profile for the given user ID.
+        Only the profile owner is allowed to update.
         """
-        try:
-            user_obj = CustomUser.objects.get(pk=user)
-            
-            # Check if the requesting user is the owner of the profile
-            if request.user.id != user_obj.id:
-                return Response(
-                    {'detail': 'You do not have permission to update this profile.'},
-                    status=status.HTTP_403_FORBIDDEN
-                )
-            
-            if user_obj.type == 'business':
-                profile = BusinessProfile.objects.get(user=user_obj)
-                serializer = BusinessProfileUpdateSerializer(profile, data=request.data, partial=True)
-            else:
-                profile = CustomerProfile.objects.get(user=user_obj)
-                serializer = CustomerProfileUpdateSerializer(profile, data=request.data, partial=True)
-            
-            if serializer.is_valid():
-                serializer.save()
-                if user_obj.type == 'business':
-                    detail_serializer = BusinessProfileDetailSerializer(profile)
-                else:
-                    detail_serializer = CustomerProfileDetailSerializer(profile)
-                return Response(detail_serializer.data)
-                # return Response(serializer.data)
-            else: 
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except(BusinessProfile.DoesNotExist, CustomerProfile.DoesNotExist):
-            return Response(
-                {'detail': 'Profile not found'},
-                status=status.HTTP_404_NOT_FOUND
-            )
+        user_obj = get_object_or_404(CustomUser, pk=user)
+        if request.user.id != user_obj.id:
+            return Response({'detail': 'You do not have permission to update this profile.'}, status=status.HTTP_403_FORBIDDEN)
+        profile = self._get_profile(user_obj)
+        serializer = self._get_update_serializer(user_obj, profile, request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        detail_serializer = self._get_detail_serializer(user_obj, profile)
+        return Response(detail_serializer.data)
+
 
 class BusinessProfileDetailView(generics.RetrieveAPIView):
     """
     Retrieve a specific business profile by ID.
     """
+
     queryset = BusinessProfile.objects.all()
     serializer_class = BusinessSerializer
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication]
     lookup_field = 'pk'
 
+
 class CustomerProfileDetailView(generics.RetrieveAPIView):
     """
     Retrieve a specific customer profile by ID.
     """
+
     queryset = CustomerProfile.objects.all()
     serializer_class = CustomerSerializer
     permission_classes = [IsAuthenticated]

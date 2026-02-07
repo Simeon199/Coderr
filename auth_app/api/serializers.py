@@ -21,41 +21,27 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, data):
-        # Validate passwords match
         if data['password'] != data['repeated_password']:
             raise serializers.ValidationError({'error': 'Passwords do not match'})
-        
-        # Validate email uniqueness
         if CustomUser.objects.filter(email=data['email']).exists():
             raise serializers.ValidationError({'email': 'Email already exists'})
-        
-        # Validate username uniqueness
         if CustomUser.objects.filter(username=data['username']).exists():
             raise serializers.ValidationError({'username': 'Username already exists'})
-        
         return data
     
     def create(self, validated_data):
-        # Remove repeated_password from data as it's not a model field
         validated_data.pop('repeated_password')
-
-        # Create the user
         user = CustomUser.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
             password=validated_data['password'],
             type=validated_data['type']
         )
-
-        # Create the appropriate profile based on user type
         if user.type == 'customer':
             CustomerProfile.objects.create(user=user)
         else:
             BusinessProfile.objects.create(user=user)
-
-        # Generate token for the user
         Token.objects.create(user=user)
-
         return user
 
 class UserLoginSerializer(serializers.Serializer):
@@ -69,15 +55,12 @@ class UserLoginSerializer(serializers.Serializer):
     def validate(self, attrs):
         username = attrs.get('username')
         password = attrs.get('password')
-
         if username and password:
-            user = authenticate(request=self.context.get('request'), 
-                                username=username, password=password)
+            user = authenticate(request=self.context.get('request'), username=username, password=password)
             if not user:
                 raise serializers.ValidationError({'error': 'Unable to log in with provided credentials.'})
         else:
             raise serializers.ValidationError('Must include "username" and "password"')
-        
         attrs['user'] = user
         return attrs
     
@@ -122,5 +105,4 @@ class BusinessProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BusinessProfile
-        fields = ['user', 'username', 'type', 'first_name', 'last_name', 'file',
-                  'location', 'tel', 'description', 'working_hours', 'type']
+        fields = ['user', 'username', 'type', 'first_name', 'last_name', 'file', 'location', 'tel', 'description', 'working_hours', 'type']

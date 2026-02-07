@@ -1,8 +1,13 @@
 from rest_framework import serializers
 from profile_app.models import BusinessProfile, CustomerProfile
 
+
 class CustomerSerializer(serializers.ModelSerializer):
-    """List view for customer profiles"""
+    """
+    Read-only serializer for listing customer profiles.
+    Exposes user-related fields via nested source lookups.
+    """
+
     user = serializers.IntegerField(source="user.id", read_only=True)
     username = serializers.CharField(source="user.username", read_only=True)
     first_name = serializers.CharField(source="user.first_name", read_only=True)
@@ -22,8 +27,13 @@ class CustomerSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = fields
 
+
 class BusinessSerializer(serializers.ModelSerializer):
-    """List view for customer profiles"""
+    """
+    Read-only serializer for listing business profiles.
+    Exposes user-related fields via nested source lookups.
+    """
+
     user = serializers.IntegerField(source="user.id", read_only=True)
     username = serializers.CharField(source="user.username", read_only=True)
     first_name = serializers.CharField(source="user.first_name", read_only=True)
@@ -47,8 +57,13 @@ class BusinessSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = fields
 
+
 class BusinessProfileUpdateSerializer(serializers.ModelSerializer):
-    """Update serializer for business profiles"""
+    """
+    Serializer for updating business profiles.
+    Handles updating both user-level and profile-level fields.
+    """
+
     first_name = serializers.CharField(source="user.first_name", required=False)
     last_name = serializers.CharField(source="user.last_name", required=False)
     file = serializers.CharField(source="user.file", required=False)
@@ -68,34 +83,43 @@ class BusinessProfileUpdateSerializer(serializers.ModelSerializer):
             "description",
             "working_hours"
         ]
-    
-    def update(self, instance, validated_data):
-        user_data = {}
-        business_data = {}
-        validated_user = validated_data.get("user", {})
 
+    def _update_user_fields(self, instance, validated_data):
+        """
+        Extract and apply user-level fields (first_name, last_name, file)
+        from validated data to the related user instance.
+        """
+        validated_user = validated_data.get("user", {})
         for field in ["first_name", "last_name", "file"]:
             if field in validated_user:
-                user_data[field] = validated_user.pop(field)
-
-        for field in ["location", "tel", "description", "working_hours"]:
-            if field in validated_data:
-                business_data[field] = validated_data.pop(field)
-
-        # Update user fields
-        for attr, value in user_data.items():
-            setattr(instance.user, attr, value)
+                setattr(instance.user, field, validated_user[field])
         instance.user.save()
 
-
-        # Update business fields
-        for attr, value in business_data.items():
-            setattr(instance, attr, value)
+    def _update_business_fields(self, instance, validated_data):
+        """
+        Extract and apply business-level fields from validated data
+        to the profile instance.
+        """
+        for field in ["location", "tel", "description", "working_hours"]:
+            if field in validated_data:
+                setattr(instance, field, validated_data[field])
         instance.save()
 
+    def update(self, instance, validated_data):
+        """
+        Update both user-level and business-level fields for the profile.
+        """
+        self._update_user_fields(instance, validated_data)
+        self._update_business_fields(instance, validated_data)
         return instance
 
+
 class BusinessProfileDetailSerializer(serializers.ModelSerializer):
+    """
+    Read-only serializer for retrieving a single business profile with full detail.
+    Includes all user and profile fields.
+    """
+
     user = serializers.IntegerField(source="user.id", read_only=True)
     username = serializers.CharField(source="user.username", read_only=True)
     first_name = serializers.CharField(source="user.first_name", read_only=True)
@@ -127,8 +151,13 @@ class BusinessProfileDetailSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = fields
 
+
 class CustomerProfileUpdateSerializer(serializers.ModelSerializer):
-    """Update serializer for customer profiles"""
+    """
+    Serializer for updating customer profiles.
+    Handles updating user-level fields (first_name, last_name, file).
+    """
+
     first_name = serializers.CharField(source="user.first_name", required=False)
     last_name = serializers.CharField(source="user.last_name", required=False)
     file = serializers.CharField(source="user.file", required=False)
@@ -142,20 +171,23 @@ class CustomerProfileUpdateSerializer(serializers.ModelSerializer):
         ]
 
     def update(self, instance, validated_data):
-        user_data = {}
+        """
+        Update user-level fields for the customer profile.
+        """
         validated_user = validated_data.get("user", {})
         for field in ["first_name", "last_name", "file"]:
             if field in validated_user:
-                user_data[field] = validated_user.pop(field)
-
-        for attr, value in user_data.items():
-            setattr(instance.user, attr, value)
+                setattr(instance.user, field, validated_user[field])
         instance.user.save()
-
         return instance
 
+
 class CustomerProfileDetailSerializer(serializers.ModelSerializer):
-    """Detail view for individual customer profile"""
+    """
+    Read-only serializer for retrieving a single customer profile with full detail.
+    Includes all user fields and timestamps.
+    """
+
     user = serializers.IntegerField(source="user.id", read_only=True)
     username = serializers.CharField(source="user.username", read_only=True)
     first_name = serializers.CharField(source="user.first_name", read_only=True)

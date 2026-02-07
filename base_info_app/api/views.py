@@ -15,12 +15,10 @@ class BaseInfoView(APIView):
         average_rating = Review.objects.aggregate(Avg('rating'))['rating__avg'] or 0
         business_profile_count = BusinessProfile.objects.count()
         offer_count = Offer.objects.count()
-
         data = {
             'review_count': review_count,
             'average_rating': average_rating,
             'business_profile_count': business_profile_count,
             'offer_count': offer_count,
         }
-
         return Response(data)

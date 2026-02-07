@@ -48,7 +48,6 @@ class LoginView(APIView):
     Handles authentication and returns token response.
     """
     permission_classes = [AllowAny]
-
     def post(self, request):
         serializer = UserLoginSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
@@ -87,14 +86,12 @@ class UserProfileView(APIView):
 
     def get(self, request):
         user = request.user
-
         if user.type == 'customer':
             profile = get_object_or_404(CustomerProfile, user=user)
             serializer = CustomerProfileSerializer(profile, data=request.data, partial=True)
         else:
             profile = get_object_or_404(BusinessProfile, user=user)
             serializer = BusinessProfileSerializer(profile, data=request.data, partial=True)
-
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
