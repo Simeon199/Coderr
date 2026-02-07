@@ -10,6 +10,7 @@ class IsUserWarranted(permissions.BasePermission):
     """Allow only authenticated customers to POST reviews"""
 
     def has_permission(self, request, view):
+        """Check if the requesting user is allowed to create or view reviews."""
         business_id = request.data.get("business_user")
         if request.method in permissions.SAFE_METHODS:
             return request.user.is_authenticated
@@ -20,9 +21,11 @@ class IsUserWarranted(permissions.BasePermission):
         return True
     
     def _is_customer(self, user) -> bool:
+        """Return True if the user is authenticated and has the customer type."""
         return user.is_authenticated and getattr(user, "type", None) == "customer"
     
     def _has_reviewed(self, user, business_id: int) -> bool:
+        """Return True if the user has already submitted a review for the given business."""
         try:
             profile = CustomerProfile.objects.get(user=user)
         except CustomerProfile.DoesNotExist:
@@ -33,6 +36,7 @@ class IsValidRating(permissions.BasePermission):
     """Reject non-int ratings or out-of-range values."""
 
     def has_permission(self, request, view) -> bool:
+        """Validate the rating field on POST and PATCH requests."""
         if request.method in ("POST", "PATCH") and "rating" in request.data:
             self._validate_rating(request.data["rating"])
         return True
@@ -53,11 +57,13 @@ class IsUserCreator(permissions.BasePermission):
     """Allow only the review's creator to modify/delete"""
 
     def has_object_permission(self, request, view, obj) -> bool:
+        """Restrict PATCH and DELETE to the review's original creator."""
         if request.method in ("PATCH", "DELETE"):
             return self._is_creator(request.user, obj)
         return True
     
     def _is_creator(self, user, obj):
+        """Return True if the user's customer profile matches the review's reviewer."""
         try:
             profile = CustomerProfile.objects.get(user=user)
         except CustomerProfile.DoesNotExist:

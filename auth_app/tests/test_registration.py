@@ -8,6 +8,7 @@ class RegistrationAPITest(APITestCase):
     """
     
     def setUp(self):
+        """Set up the registration URL used by all test methods."""
         self.url = reverse("registration")
 
     def test_registration_successfull(self):

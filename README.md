@@ -25,7 +25,7 @@ To get started with running the application locally,
 ensure you have the following prerequisites:
 
 - Python 3.12 or higher
-- [Postman](https://www.postman.com/downloads/)(optional, for easy API testing)
+- [Postman](https://www.postman.com/downloads/) (optional, for easy API testing)
 
 ## Installation
 

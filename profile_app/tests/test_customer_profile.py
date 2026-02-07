@@ -12,7 +12,7 @@ class CustomerProfileViewTest(ProfileTests):
     """
 
     def setUp(self) -> None:
-        # Create an authenticated user
+        """Create an authenticated customer user with profile, token and API client."""
         self.user = CustomUser.objects.create_user(
             username="test_user",
             password="secret123",
@@ -22,23 +22,15 @@ class CustomerProfileViewTest(ProfileTests):
             type="customer"
         )
 
-        # Generate a token for the user
         self.token = Token.objects.create(user=self.user)
-
-        # Create a CustomerProfile for the user
         self.profile = CustomerProfile.objects.create(
             user=self.user
         )
         self.customer_profile = self.profile
-
-        # file is stored on CustomUser, not CustomerProfile
         self.user.file = "profile_picture.jpg"
         self.user.save()
-
         self.client = APIClient()
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')
-
-        # Prepare the URL for the view
         self.url = reverse("customer-profile")
 
     def test_authenticated_user_can_retrieve_profile(self):
@@ -46,11 +38,7 @@ class CustomerProfileViewTest(ProfileTests):
         A logged-in user should receive status 200 and the expected JSON payload
         """
         response = self.client.get(self.url, format="json")
-
-        # Status code
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        # Validate response structure
         data = response.json()
         self.assertIsInstance(data, list)
         self.assertGreater(len(data), 0)
@@ -67,8 +55,6 @@ class CustomerProfileViewTest(ProfileTests):
         for item in data:
             self.assertIsInstance(item, dict)
             self.assertEqual(set(item.keys()), expected_keys)
-            
-            # Quick sanity checks
             self.assertEqual(item["user"], self.user.id)
             self.assertEqual(item["username"], "test_user")
             self.assertEqual(item["first_name"], "Test")

@@ -10,7 +10,10 @@ from profile_app.models import BusinessProfile
 User = get_user_model()
 
 class BaseInfoAPITestCase(TestCase):
+    """Test the public base-info endpoint that returns platform statistics."""
+
     def setUp(self):
+        """Create a user, two reviews, a business profile and an offer for testing."""
         self.client = APIClient()
         self.url = reverse('base-info')
         self.user = User.objects.create_user(username='test_user', password='test_password')
@@ -20,6 +23,7 @@ class BaseInfoAPITestCase(TestCase):
         Offer.objects.create(title="Test Offer")
 
     def test_base_info_view(self):
+        """Verify that GET returns correct counts and average rating."""
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.data
