@@ -72,8 +72,6 @@ class OrderListSerializers(serializers.ModelSerializer):
         return data
     
 class SingleOrderSerializer(serializers.ModelSerializer):
-    business_user = BusinessProfileNestedSerializer(read_only=True)
-    customer_user = CustomerProfileNestedSerializer(read_only=True)
     features = serializers.SlugRelatedField(
         many=True,
         slug_field='feature',
@@ -83,25 +81,25 @@ class SingleOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = [
-            "id", 
-            "customer_user", 
-            "business_user", 
-            "title", 
-            "revisions", 
-            "delivery_time_in_days", 
-            "price", 
-            "features", 
-            "offer_type", 
-            "status", 
-            "created_at", 
+            "id",
+            "customer_user",
+            "business_user",
+            "title",
+            "revisions",
+            "delivery_time_in_days",
+            "price",
+            "features",
+            "offer_type",
+            "status",
+            "created_at",
             "updated_at"
         ]
         read_only_fields = [
-            "id", 
-            "created_at", 
+            "id",
+            "created_at",
             "updated_at"
         ]
-    
+
     def update(self, instance, validated_data):
         features_data = validated_data.pop("features", None)
         for attr, value in validated_data.items():
@@ -110,3 +108,11 @@ class SingleOrderSerializer(serializers.ModelSerializer):
         if features_data is not None:
             instance.features.set(features_data)
         return instance
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if instance.business_user:
+            data['business_user'] = instance.business_user.user.id
+        if instance.customer_user:
+            data['customer_user'] = instance.customer_user.user.id
+        return data
