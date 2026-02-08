@@ -80,9 +80,7 @@ class BusinessProfileUpdateSerializer(serializers.ModelSerializer):
 
     first_name = serializers.CharField(source="user.first_name", required=False)
     last_name = serializers.CharField(source="user.last_name", required=False)
-    file = serializers.PrimaryKeyRelatedField(
-        queryset=FileUpload.objects.all(), source="user.file", required=False, allow_null=True
-    )
+    file = serializers.FileField(required=False, allow_null=True)
     location = serializers.CharField(required=False)
     tel = serializers.CharField(required=False)
     description = serializers.CharField(required=False)
@@ -102,14 +100,20 @@ class BusinessProfileUpdateSerializer(serializers.ModelSerializer):
 
     def _update_user_fields(self, instance, validated_data):
         """
-        Extract and apply user-level fields (first_name, last_name, file)
+        Extract and apply user-level fields (first_name, last_name)
         from validated data to the related user instance.
         """
 
         validated_user = validated_data.get("user", {})
-        for field in ["first_name", "last_name", "file"]:
+        for field in ["first_name", "last_name"]:
             if field in validated_user:
                 setattr(instance.user, field, validated_user[field])
+
+        uploaded_file = validated_data.get("file")
+        if uploaded_file:
+            file_upload = FileUpload.objects.create(file=uploaded_file)
+            instance.user.file = file_upload
+
         instance.user.save()
 
     def _update_business_fields(self, instance, validated_data):
@@ -182,9 +186,7 @@ class CustomerProfileUpdateSerializer(serializers.ModelSerializer):
 
     first_name = serializers.CharField(source="user.first_name", required=False)
     last_name = serializers.CharField(source="user.last_name", required=False)
-    file = serializers.PrimaryKeyRelatedField(
-        queryset=FileUpload.objects.all(), source="user.file", required=False, allow_null=True
-    )
+    file = serializers.FileField(required=False, allow_null=True)
 
     class Meta:
         model = CustomerProfile
@@ -199,9 +201,15 @@ class CustomerProfileUpdateSerializer(serializers.ModelSerializer):
         Update user-level fields for the customer profile.
         """
         validated_user = validated_data.get("user", {})
-        for field in ["first_name", "last_name", "file"]:
+        for field in ["first_name", "last_name"]:
             if field in validated_user:
                 setattr(instance.user, field, validated_user[field])
+
+        uploaded_file = validated_data.get("file")
+        if uploaded_file:
+            file_upload = FileUpload.objects.create(file=uploaded_file)
+            instance.user.file = file_upload
+
         instance.user.save()
         return instance
 
