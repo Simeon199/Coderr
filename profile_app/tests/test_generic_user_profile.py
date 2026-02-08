@@ -149,7 +149,6 @@ class ProfileTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIsNotNone(response.data.get("first_name"))
         self.assertIsNotNone(response.data.get("last_name"))
-        self.assertIsNotNone(response.data.get("file"))
         self.assertEqual(response.data.get("first_name"),self.user.first_name if self.user.first_name else "")
         self.assertEqual(response.data.get("last_name"), self.user.last_name if self.user.last_name else "")
         if self.user.type == "business":

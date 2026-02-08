@@ -1,6 +1,8 @@
 from django.urls import reverse
+from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import status
 from rest_framework.test import APIClient
+from upload_app.models import FileUpload
 from .test_generic_user_profile import ProfileTests
 
 class BusinessProfileTests(ProfileTests):
@@ -21,7 +23,9 @@ class BusinessProfileTests(ProfileTests):
         self.business_profile.working_hours = "9-17"
         self.business_profile.save()
 
-        self.user.file = "profile_picture.jpg"
+        uploaded_file = SimpleUploadedFile("profile_picture.jpg", b"file_content", content_type="image/jpeg")
+        self.file_upload = FileUpload.objects.create(file=uploaded_file)
+        self.user.file = self.file_upload
         self.user.save()
 
     def test_authenticated_user_receives_expected_payload(self):
@@ -56,7 +60,7 @@ class BusinessProfileTests(ProfileTests):
             self.assertEqual(item["username"], "test_user")
             self.assertEqual(item["first_name"], "Test")
             self.assertEqual(item["last_name"], "User")
-            self.assertEqual(item["file"], "profile_picture.jpg")
+            self.assertEqual(item["file"], self.file_upload.file.url)
             self.assertEqual(item["location"], "Berlin")
             self.assertEqual(item["tel"], "123456789")
             self.assertEqual(item["description"], "Business description")

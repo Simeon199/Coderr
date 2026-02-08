@@ -1,9 +1,11 @@
 from django.urls import reverse
+from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework.authtoken.models import Token
 from auth_app.models import CustomUser
 from profile_app.models import CustomerProfile
+from upload_app.models import FileUpload
 from .test_generic_user_profile import ProfileTests
 
 class CustomerProfileViewTest(ProfileTests):
@@ -30,7 +32,9 @@ class CustomerProfileViewTest(ProfileTests):
             user=self.user
         )
         self.customer_profile = self.profile
-        self.user.file = "profile_picture.jpg"
+        uploaded_file = SimpleUploadedFile("profile_picture.jpg", b"file_content", content_type="image/jpeg")
+        self.file_upload = FileUpload.objects.create(file=uploaded_file)
+        self.user.file = self.file_upload
         self.user.save()
         self.client = APIClient()
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')
@@ -62,7 +66,7 @@ class CustomerProfileViewTest(ProfileTests):
             self.assertEqual(item["username"], "test_user")
             self.assertEqual(item["first_name"], "Test")
             self.assertEqual(item["last_name"], "User")
-            self.assertEqual(item["file"], "profile_picture.jpg")
+            self.assertEqual(item["file"], self.file_upload.file.url)
 
     def test_unauthenticated_user_cannot_access(self):
         """
