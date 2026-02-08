@@ -1,5 +1,13 @@
 from rest_framework import serializers
 from profile_app.models import BusinessProfile, CustomerProfile
+from upload_app.models import FileUpload
+
+
+def get_file_url(user):
+    """Return the file URL for a user's uploaded file, or None."""
+    if user.file and user.file.file:
+        return user.file.file.url
+    return None
 
 
 class CustomerSerializer(serializers.ModelSerializer):
@@ -12,7 +20,7 @@ class CustomerSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source="user.username", read_only=True)
     first_name = serializers.CharField(source="user.first_name", read_only=True)
     last_name = serializers.CharField(source="user.last_name", read_only=True)
-    file = serializers.CharField(source="user.file", read_only=True)
+    file = serializers.SerializerMethodField()
     type = serializers.CharField(source="user.type", read_only=True)
 
     class Meta:
@@ -27,6 +35,9 @@ class CustomerSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = fields
 
+    def get_file(self, obj):
+        return get_file_url(obj.user)
+
 
 class BusinessSerializer(serializers.ModelSerializer):
     """
@@ -38,7 +49,7 @@ class BusinessSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source="user.username", read_only=True)
     first_name = serializers.CharField(source="user.first_name", read_only=True)
     last_name = serializers.CharField(source="user.last_name", read_only=True)
-    file = serializers.CharField(source="user.file", read_only=True)
+    file = serializers.SerializerMethodField()
     type = serializers.CharField(source="user.type", read_only=True)
 
     class Meta:
@@ -57,6 +68,9 @@ class BusinessSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = fields
 
+    def get_file(self, obj):
+        return get_file_url(obj.user)
+
 
 class BusinessProfileUpdateSerializer(serializers.ModelSerializer):
     """
@@ -66,7 +80,9 @@ class BusinessProfileUpdateSerializer(serializers.ModelSerializer):
 
     first_name = serializers.CharField(source="user.first_name", required=False)
     last_name = serializers.CharField(source="user.last_name", required=False)
-    file = serializers.CharField(source="user.file", required=False)
+    file = serializers.PrimaryKeyRelatedField(
+        queryset=FileUpload.objects.all(), source="user.file", required=False, allow_null=True
+    )
     location = serializers.CharField(required=False)
     tel = serializers.CharField(required=False)
     description = serializers.CharField(required=False)
@@ -111,7 +127,7 @@ class BusinessProfileUpdateSerializer(serializers.ModelSerializer):
         """
         Update both user-level and business-level fields for the profile.
         """
-        
+
         self._update_user_fields(instance, validated_data)
         self._update_business_fields(instance, validated_data)
         return instance
@@ -133,7 +149,7 @@ class BusinessProfileDetailSerializer(serializers.ModelSerializer):
     tel = serializers.CharField(read_only=True)
     description = serializers.CharField(read_only=True)
     working_hours = serializers.CharField(read_only=True)
-    file = serializers.CharField(source="user.file", read_only=True)
+    file = serializers.SerializerMethodField()
     created_at = serializers.DateTimeField(source="user.created_at", read_only=True)
 
     class Meta:
@@ -154,6 +170,9 @@ class BusinessProfileDetailSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = fields
 
+    def get_file(self, obj):
+        return get_file_url(obj.user)
+
 
 class CustomerProfileUpdateSerializer(serializers.ModelSerializer):
     """
@@ -163,7 +182,9 @@ class CustomerProfileUpdateSerializer(serializers.ModelSerializer):
 
     first_name = serializers.CharField(source="user.first_name", required=False)
     last_name = serializers.CharField(source="user.last_name", required=False)
-    file = serializers.CharField(source="user.file", required=False)
+    file = serializers.PrimaryKeyRelatedField(
+        queryset=FileUpload.objects.all(), source="user.file", required=False, allow_null=True
+    )
 
     class Meta:
         model = CustomerProfile
@@ -195,7 +216,7 @@ class CustomerProfileDetailSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source="user.username", read_only=True)
     first_name = serializers.CharField(source="user.first_name", read_only=True)
     last_name = serializers.CharField(source="user.last_name", read_only=True)
-    file = serializers.CharField(source="user.file", read_only=True)
+    file = serializers.SerializerMethodField()
     email = serializers.EmailField(source="user.email", read_only=True)
     type = serializers.CharField(source="user.type", read_only=True)
     created_at = serializers.DateTimeField(source="user.created_at", read_only=True)
@@ -213,3 +234,6 @@ class CustomerProfileDetailSerializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = fields
+
+    def get_file(self, obj):
+        return get_file_url(obj.user)

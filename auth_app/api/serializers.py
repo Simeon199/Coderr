@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate
 from auth_app.models import CustomUser
 from rest_framework.authtoken.models import Token
 from profile_app.models import CustomerProfile, BusinessProfile
+from upload_app.models import FileUpload
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     """
@@ -85,6 +86,13 @@ class RegistrationResponseSerializer(serializers.ModelSerializer):
         token = Token.objects.get(user=obj)
         return token.key
     
+def get_file_url(user):
+    """Return the file URL for a user's uploaded file, or None."""
+    if user.file and user.file.file:
+        return user.file.file.url
+    return None
+
+
 class CustomerProfileSerializer(serializers.ModelSerializer):
     """
     Serializer for customer profile data.
@@ -92,12 +100,16 @@ class CustomerProfileSerializer(serializers.ModelSerializer):
     user = serializers.IntegerField(source='user.id')
     username = serializers.CharField(source='user.username')
     type = serializers.CharField(source='user.type')
-    file = serializers.CharField(source='user.file', allow_blank=True)
+    file = serializers.SerializerMethodField()
 
     class Meta:
         model = CustomerProfile
         fields = ['user', 'username', 'type', 'first_name', 'last_name', 'file', 'type']
-        
+
+    def get_file(self, obj):
+        return get_file_url(obj.user)
+
+
 class BusinessProfileSerializer(serializers.ModelSerializer):
     """
     Serializer for business profile data.
@@ -105,8 +117,11 @@ class BusinessProfileSerializer(serializers.ModelSerializer):
     user = serializers.IntegerField(source='user.id')
     username = serializers.CharField(source='user.username')
     type = serializers.CharField(source='user.type')
-    file = serializers.CharField(source='user.file', allow_blank=True)
+    file = serializers.SerializerMethodField()
 
     class Meta:
         model = BusinessProfile
         fields = ['user', 'username', 'type', 'first_name', 'last_name', 'file', 'location', 'tel', 'description', 'working_hours', 'type']
+
+    def get_file(self, obj):
+        return get_file_url(obj.user)

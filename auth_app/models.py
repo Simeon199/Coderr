@@ -10,13 +10,17 @@ class CustomUser(AbstractUser):
         ('customer', 'Customer'),
         ('business', 'Business')
     )
-    # username, email, first_name and last_name are automatically 
-    # inherited from the AbstractUser and don't have to be declared manually! 
-    
+
     type = models.CharField(max_length=10, choices=TYPE_CHOICES, default='customer')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    file = models.CharField(max_length=100, default='', blank=True)
+    file = models.ForeignKey(
+        'upload_app.FileUpload',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='user'
+    )
 
     class Meta:
         verbose_name = 'User'

@@ -52,13 +52,6 @@ class OfferDetail(models.Model):
         ('premium', 'Premium')], 
         null=True, 
         blank=True)
-    
-    # def save(self, *args, **kwargs):
-    #     if self.revisions is None or self.revisions < 0:
-    #         self.revisions = None
-    #     if self.delivery_time_in_days is None or self.delivery_time_in_days < 0:
-    #         self.delivery_time_in_days = None
-    #     super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title
