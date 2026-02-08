@@ -7,6 +7,7 @@ class BusinessProfileTests(ProfileTests):
     """
     Test the business profile endpoint that returns a list of business users.
     """
+
     def setUp(self):
         """Extend the parent setUp with business-specific profile data."""
         super().setUp()
@@ -27,6 +28,7 @@ class BusinessProfileTests(ProfileTests):
         """
         Verify that an authenticated user receives all expected business profile fields.
         """
+
         url = reverse("business-profile")
         response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -63,8 +65,9 @@ class BusinessProfileTests(ProfileTests):
 
     def test_unauthenticated_user_gets_401(self):
         """
-        Unauthenticated requests should be rejected with 401
+        Unauthenticated requests should be rejected with 401.
         """
+        
         unauth_client = APIClient()
         response = unauth_client.get(reverse("business-profile"), format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

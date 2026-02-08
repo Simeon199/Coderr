@@ -9,8 +9,12 @@ class ProfileTests(APITestCase):
     """
     Base test class for testing profile patch logic.
     """
+
     def setUp(self):
-        """Create an authenticated business user with profile, token and API client."""
+        """
+        Create an authenticated business user with profile, token and API client.
+        """
+
         self.user = CustomUser.objects.create_user(
             username="test_user",
             password="secret123",
@@ -36,7 +40,10 @@ class ProfileTests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')
 
     def test_update_profile_as_account_admin(self):
-        """Verify that the profile owner can patch their own profile fields."""
+        """
+        Verify that the profile owner can patch their own profile fields.
+        """
+
         url = reverse('user-profile', kwargs={'user': self.user.pk})
         self.client.force_authenticate(user=self.user)
         data = {}
@@ -52,7 +59,10 @@ class ProfileTests(APITestCase):
             self.assertEqual(response.data["first_name"], "Updated")
 
     def test_update_profile_as_non_account_admin(self):
-        """Verify that a user cannot patch another user's profile (403)."""
+        """
+        Verify that a user cannot patch another user's profile (403).
+        """
+
         other_user = CustomUser.objects.create_user(
             username="other_user",
             password="secret123",
@@ -77,7 +87,10 @@ class ProfileTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_update_profile_as_non_authenticated(self):
-        """Verify that an unauthenticated user cannot patch a profile (401)."""
+        """
+        Verify that an unauthenticated user cannot patch a profile (401).
+        """
+
         unauth_client = APIClient()
         url = reverse('user-profile', kwargs={'user': self.user.pk})
         data = {
@@ -127,8 +140,9 @@ class ProfileTests(APITestCase):
     def test_profile_fields_not_null(self):
         """
         Test that required fields are not null and are set to an empty string if no value is
-        assigned
+        assigned.
         """
+        
         url = reverse('user-profile', kwargs={'user': self.user.pk})
         self.client.force_authenticate(user=self.user)
         response = self.client.get(url, format='json')

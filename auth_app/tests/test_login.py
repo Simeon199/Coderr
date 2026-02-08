@@ -6,18 +6,21 @@ from django.contrib.auth import get_user_model
 
 class LoginAPITest(APITestCase):
     """
-    Test the user login endpoint
+    Test the user login endpoint.
     """
+
     def setUp(self):
         """
         Set up the login URL used by all test methods.
         """
+
         self.url = reverse("login")
 
     def test_login_successfull(self):
         """
         Verify that valid credentials return a 200 response with token, username, email and user_id.
         """
+
         data = {
             "username": "exampleUsername",
             "password": "examplePassword"
@@ -41,6 +44,7 @@ class LoginAPITest(APITestCase):
         """
         Verify that omitting username or password returns a 400 error.
         """
+
         data = {"username": "exampleUsername"}
         response = self.client.post(self.url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -54,6 +58,7 @@ class LoginAPITest(APITestCase):
         """
         Verify that a wrong password or unknown username returns a 400 error.
         """
+        
         User = get_user_model()
         User.objects.create_user(
             username="exampleUsername",

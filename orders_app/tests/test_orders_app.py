@@ -16,6 +16,7 @@ class OrdersAPITestCase(APITestCase):
         """
         Create users, profiles, an offer with detail and a sample order for testing.
         """
+
         self.user = CustomUser.objects.create_user(
             username = "john_doe",
             password="password24!",
@@ -116,12 +117,11 @@ class OrdersAPITestCase(APITestCase):
         self.client = APIClient()
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.token.key}')
 
-    # === GET ORDERS LIST TESTS ===
-
     def test_get_orders_structure(self):
         """
         Verify that each order in the list contains all required fields with correct types.
         """
+
         url = reverse('orders-list')
         self.client.force_authenticate(user=self.user)
         response = self.client.get(url, format='json')
@@ -146,8 +146,9 @@ class OrdersAPITestCase(APITestCase):
 
     def test_get_orders_unauthenticated(self):
         """
-        Test that unauthenticated users cannot access the orders list
+        Test that unauthenticated users cannot access the orders list.
         """
+
         url = reverse('orders-list')
         unauthenticated_client = APIClient()
         response = unauthenticated_client.patch(url, format='json')
@@ -155,19 +156,19 @@ class OrdersAPITestCase(APITestCase):
 
     def test_get_orders_authenticated(self):
         """
-        Test that authenticated users can access the orders list
+        Test that authenticated users can access the orders list.
         """
+
         url = reverse('orders-list')
         self.client.force_authenticate(user=self.user)
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    # === POST ORDERS TESTS ===
-
     def test_post_order_as_authenticated_customer(self):
         """
-        Checks whether an authenticated customer is able to create a new order
+        Checks whether an authenticated customer is able to create a new order.
         """
+
         url = reverse('orders-list')
         self.client.force_authenticate(user=self.customer_user)
         data = {
@@ -177,6 +178,7 @@ class OrdersAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIsInstance(response.data, dict)
         required_fields = {"id", "customer_user", "business_user", "title", "revisions", "delivery_time_in_days", "price", "features", "offer_type", "status", "created_at"}
+
         self.assertTrue(required_fields.issubset(response.data.keys()))
         self.assertIsInstance(response.data["id"], int)
         self.assertIsInstance(response.data["customer_user"], int)
@@ -194,6 +196,7 @@ class OrdersAPITestCase(APITestCase):
         """
         Verify that unauthenticated users cannot create an order (401).
         """
+
         url = reverse('orders-list')
         data = {
             "offer_detail_id": self.offerdetail.pk
@@ -206,6 +209,7 @@ class OrdersAPITestCase(APITestCase):
         """
         Verify that business users cannot create an order (403).
         """
+
         url = reverse('orders-list')
         self.client.force_authenticate(user=self.business_user)
         data = {
@@ -214,12 +218,11 @@ class OrdersAPITestCase(APITestCase):
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    # === GET SINGLE ORDERS TEST ===
-
     def test_get_order_count_for_given_business_user(self):
         """
         Verify that an authenticated user can retrieve the in-progress order count.
         """
+
         url = reverse('in-progress-order-count', kwargs={'pk': self.business_profile.user.pk})
         self.client.force_authenticate(user=self.business_user)
         response = self.client.get(url, format='json')
@@ -229,6 +232,7 @@ class OrdersAPITestCase(APITestCase):
         """
         Verify that unauthenticated users cannot retrieve the in-progress order count (401).
         """
+
         url = reverse('in-progress-order-count', kwargs={'pk': self.business_profile.user.pk})
         unauthenticated_client = APIClient()
         response = unauthenticated_client.get(url, format='json')
@@ -236,8 +240,9 @@ class OrdersAPITestCase(APITestCase):
 
     def test_requested_business_user_for_order_count_doesnt_exit(self):
         """
-        Test a 404 is returned when the requested business user does not exist
+        Test a 404 is returned when the requested business user does not exist.
         """
+
         url = reverse('in-progress-order-count', kwargs={'pk': 9999}) 
         self.client.force_authenticate(user=self.business_user)
         response = self.client.get(url, format='json')
@@ -247,6 +252,7 @@ class OrdersAPITestCase(APITestCase):
         """
         Verify that an authenticated user can retrieve the completed order count.
         """
+
         url = reverse('completed-order-count', kwargs={'pk': self.business_profile.user.pk})
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -255,6 +261,7 @@ class OrdersAPITestCase(APITestCase):
         """
         Verify that unauthenticated users cannot retrieve the completed order count (401).
         """
+
         url = reverse('completed-order-count', kwargs={'pk': self.business_profile.user.pk})
         unauthenticated_user = APIClient()
         response = unauthenticated_user.get(url, format='json')
@@ -262,19 +269,19 @@ class OrdersAPITestCase(APITestCase):
 
     def test_requested_business_user_for_completed_order_count_doesnt_exit(self):
         """
-        Test that a 404 is returned when the requested business user does not exist
+        Test that a 404 is returned when the requested business user does not exist.
         """
+
         url = reverse('completed-order-count', kwargs={'pk': 9999})
         self.client.force_authenticate(user=self.business_user)
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    # === PATCH SINGLE ORDERS ===
-
     def test_update_status_for_authenticated_business_user(self):
         """
-        Test that an authenticated business user can update the status of an order
+        Test that an authenticated business user can update the status of an order.
         """
+
         url = reverse('single-order', kwargs={'pk': self.order.pk})
         self.client.force_authenticate(user=self.business_user)
         data = {
@@ -287,8 +294,9 @@ class OrdersAPITestCase(APITestCase):
 
     def test_update_status_failed_because_of_false_choices(self):
         """
-        Test that updating the status with invalid choices fails
+        Test that updating the status with invalid choices fails.
         """
+
         url = reverse('single-order', kwargs={'pk': self.order.pk})
         self.client.force_authenticate(user=self.business_user)
         data = {
@@ -299,8 +307,9 @@ class OrdersAPITestCase(APITestCase):
 
     def test_update_status_for_unauthenticated_user_fails(self):
         """
-        Test that unauthenticated users cannot update the status of an order
+        Test that unauthenticated users cannot update the status of an order.
         """
+
         url = reverse('single-order', kwargs={'pk': self.order.pk})
         unauthenticated_client = APIClient()
         data = {
@@ -311,8 +320,9 @@ class OrdersAPITestCase(APITestCase):
 
     def test_update_status_for_authenticated_customer_user_is_not_permitted(self):
         """
-        Test that authenticated customer users cannot uopdate the status of an order
+        Test that authenticated customer users cannot uopdate the status of an order.
         """
+
         url = reverse('single-order', kwargs={'pk': self.order.pk})
         self.client.force_authenticate(user=self.customer_user)
         data = {
@@ -323,8 +333,9 @@ class OrdersAPITestCase(APITestCase):
 
     def test_update_status_failed_because_given_id_wasnt_found(self):
         """
-        Test that updating the status of a non-existent order fails
+        Test that updating the status of a non-existent order fails.
         """
+
         url = reverse('single-order', kwargs={'pk': 9999})
         self.client.force_authenticate(user=self.business_user)
         data = {
@@ -333,12 +344,11 @@ class OrdersAPITestCase(APITestCase):
         response = self.client.patch(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    # === DELETE SINGLE ORDERS ===
-
     def test_order_deletion_successfull_for_admin_user(self):
         """
-        Test that an admin user can successfully delete an order
+        Test that an admin user can successfully delete an order.
         """
+
         self.client.force_authenticate(user=self.admin_user)
         url=reverse('single-order', kwargs={'pk': self.order.pk})
         response = self.client.delete(url)
@@ -347,8 +357,9 @@ class OrdersAPITestCase(APITestCase):
     
     def test_order_deletion_failed_for_unauthenticated_user(self):
         """
-        Test that unauthenticated users cannot delete an order
+        Test that unauthenticated users cannot delete an order.
         """
+
         url = reverse('single-order', kwargs={'pk': self.order.pk})
         unauthenticated_client = APIClient()
         response = unauthenticated_client.delete(url)
@@ -356,8 +367,9 @@ class OrdersAPITestCase(APITestCase):
 
     def test_order_deletion_failed_because_user_is_no_admin(self):
         """
-        Test that non-admin users cannot delete an order
+        Test that non-admin users cannot delete an order.
         """
+
         self.client.force_authenticate(user=self.customer_user)
         url = reverse('single-order', kwargs={'pk': self.order.pk})
         response = self.client.delete(url)
@@ -365,8 +377,9 @@ class OrdersAPITestCase(APITestCase):
 
     def test_order_deletion_failed_because_it_wasnt_found(self):
         """
-        Test that deleting a non-existent order fails
+        Test that deleting a non-existent order fails.
         """
+
         self.client.force_authenticate(user=self.admin_user)
         url = reverse('single-order', kwargs={'pk': 9999})
         response = self.client.delete(url)

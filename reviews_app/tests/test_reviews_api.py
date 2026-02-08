@@ -14,6 +14,7 @@ class ReviewAPITestCase(APITestCase):
         """
         Create customer and business users, profiles and sample reviews for testing.
         """
+
         self.customer_user = CustomUser.objects.create_user(
             username="testcustomer",
             password="testpass123",
@@ -65,6 +66,7 @@ class ReviewAPITestCase(APITestCase):
         """
         Verify that each review in the list contains all required fields with correct types.
         """
+
         url = reverse('review-list')
         self.client.force_authenticate(user=self.customer_user)
         response = self.client.get(url, format='json')
@@ -84,16 +86,18 @@ class ReviewAPITestCase(APITestCase):
 
     def test_get_reviews_unauthenticated(self):
         """
-        Test that unauthenticated users cannot access reviews list
+        Test that unauthenticated users cannot access reviews list.
         """
+
         url = reverse('review-list')
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_get_reviews_authenticated(self):
         """
-        Test that authenticated users can access reviews list
+        Test that authenticated users can access reviews list.
         """
+
         url = reverse('review-list')
         self.client.force_authenticate(user=self.customer_user)
         response = self.client.get(url, format='json')
@@ -101,8 +105,9 @@ class ReviewAPITestCase(APITestCase):
 
     def test_post_review_as_customer(self):
         """
-        Test that customers can create reviews
+        Test that customers can create reviews.
         """
+
         new_business_user = CustomUser.objects.create_user(
             username="anotherbusiness",
             password="testpass123",
@@ -127,8 +132,9 @@ class ReviewAPITestCase(APITestCase):
 
     def test_post_review_as_business(self):
         """
-        Test that business users cannot create reviews
+        Test that business users cannot create reviews.
         """
+
         url = reverse('review-list')
         self.client.force_authenticate(user=self.business_user)
         data = {
@@ -142,8 +148,9 @@ class ReviewAPITestCase(APITestCase):
 
     def test_post_review_unauthenticated(self):
         """
-        Test that unauthenticated users cannot create reviews
+        Test that unauthenticated users cannot create reviews.
         """
+
         url = reverse('review-list')
         data = {
             'business_user': self.business_profile.id,
@@ -156,8 +163,9 @@ class ReviewAPITestCase(APITestCase):
 
     def test_update_review_as_creator(self):
         """
-        Test that the creator can update their review
+        Test that the creator can update their review.
         """
+
         url = reverse('single-review', kwargs={'pk': self.review.pk})
         self.client.force_authenticate(user=self.customer_user)
         data = {'rating': 3, 'description': 'Updated review'}
@@ -166,8 +174,9 @@ class ReviewAPITestCase(APITestCase):
 
     def test_update_review_as_non_creator(self):
         """
-        Test that non-creators cannot update reviews
+        Test that non-creators cannot update reviews.
         """
+
         other_customer = CustomUser.objects.create_user(
             username="othercustomer",
             password="testpass123",
@@ -181,8 +190,9 @@ class ReviewAPITestCase(APITestCase):
 
     def test_delete_review_as_creator(self):
         """
-        Test that the creator can delete their review
+        Test that the creator can delete their review.
         """
+
         url = reverse('single-review', kwargs={'pk': self.review.pk})
         self.client.force_authenticate(user=self.customer_user)
         response = self.client.delete(url)
@@ -190,8 +200,9 @@ class ReviewAPITestCase(APITestCase):
 
     def test_delete_review_as_non_creator(self):
         """
-        Test that non-creators cannot delete reviews
+        Test that non-creators cannot delete reviews.
         """
+
         other_customer = CustomUser.objects.create_user(
             username="othercustomer2",
             password="testpass123",
@@ -202,12 +213,11 @@ class ReviewAPITestCase(APITestCase):
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    # Further API tests covering invalid body data
-
     def test_post_review_invalid_rating(self):
         """
-        Test that posting a review with an invalid rating returns a 400 status message
+        Test that posting a review with an invalid rating returns a 400 status message.
         """
+
         url = reverse('review-list')
         self.client.force_authenticate(user=self.customer_user)
         data = {
@@ -221,8 +231,9 @@ class ReviewAPITestCase(APITestCase):
 
     def test_post_review_missing_fields(self):
         """
-        Test that posting a review with missing required fields returns a 400 status
+        Test that posting a review with missing required fields returns a 400 status.
         """
+
         url = reverse('review-list')
         self.client.force_authenticate(user=self.customer_user)
         data = {
@@ -233,8 +244,9 @@ class ReviewAPITestCase(APITestCase):
 
     def test_patch_review_invalid_rating(self):
         """
-        Test that updating a review with an invalid rating returns a 400 status
+        Test that updating a review with an invalid rating returns a 400 status.
         """
+
         url = reverse('single-review', kwargs={'pk': self.review.pk})
         self.client.force_authenticate(user=self.customer_user)
         data = {
@@ -245,8 +257,9 @@ class ReviewAPITestCase(APITestCase):
 
     def test_patch_review_invalid_description(self):
         """
-        Test that updating a review with an invalid descriptions returns a 400 status
+        Test that updating a review with an invalid descriptions returns a 400 status.
         """
+
         url = reverse('single-review', kwargs={'pk': self.review.pk})
         self.client.force_authenticate(user=self.customer_user)
         data = {
@@ -257,8 +270,9 @@ class ReviewAPITestCase(APITestCase):
 
     def test_post_duplicate_review(self):
         """
-        Test that a customer cannot submit multiple reviews for the same business_user
+        Test that a customer cannot submit multiple reviews for the same business_user.
         """
+
         new_business_user = CustomUser.objects.create_user(
             username="newbusiness",
             password="testpass123",
@@ -290,7 +304,10 @@ class ReviewAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_post_review_with_string_numeric_rating(self):
-        """Posting a review with rating as a numeric string should be rejected."""
+        """
+        Posting a review with rating as a numeric string should be rejected.
+        """
+
         url = reverse('review-list')
         self.client.force_authenticate(user=self.customer_user)
 
@@ -303,7 +320,10 @@ class ReviewAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_patch_review_with_string_numeric_rating(self):
-        """Patching a review with rating as a numeric string should be rejected."""
+        """
+        Patching a review with rating as a numeric string should be rejected.
+        """
+        
         url = reverse('single-review', kwargs={'pk': self.review.pk})
         self.client.force_authenticate(user=self.customer_user)
         data = {

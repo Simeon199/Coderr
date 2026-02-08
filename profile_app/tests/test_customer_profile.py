@@ -12,7 +12,10 @@ class CustomerProfileViewTest(ProfileTests):
     """
 
     def setUp(self) -> None:
-        """Create an authenticated customer user with profile, token and API client."""
+
+        """
+        Create an authenticated customer user with profile, token and API client.
+        """
         self.user = CustomUser.objects.create_user(
             username="test_user",
             password="secret123",
@@ -35,7 +38,7 @@ class CustomerProfileViewTest(ProfileTests):
 
     def test_authenticated_user_can_retrieve_profile(self):
         """
-        A logged-in user should receive status 200 and the expected JSON payload
+        A logged-in user should receive status 200 and the expected JSON payload.
         """
         response = self.client.get(self.url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)

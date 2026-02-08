@@ -70,8 +70,6 @@ class OffersAPITestCase(APITestCase):
             offer = self.offer 
         )
 
-    # === GET OFFERS LIST TESTS === 
-
     def test_get_offers_structure(self):
         """
         Test pagination structure is returned correctly
@@ -97,7 +95,6 @@ class OffersAPITestCase(APITestCase):
         url = reverse('offers-list')
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
         self.assertIsInstance(response.data["count"], int)
         self.assertGreaterEqual(response.data["count"], 0)
         self.assertIsNone(response.data['previous']) 
@@ -183,8 +180,6 @@ class OffersAPITestCase(APITestCase):
             self.assertEqual(offer["user"], self.business_user.id)
             self.assertGreaterEqual(int(offer["min_price"]), 100)
 
-    # === POST OFFERS TESTS ===
-
     def test_post_offers_as_customer_forbidden(self):
         """
         Test customer cannot create offers
@@ -251,8 +246,6 @@ class OffersAPITestCase(APITestCase):
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    # === GET SINGLE OFFER TESTS ===
-
     def test_get_single_offer_authenticated(self):
         """
         Test retrieving a single offer when authenticated
@@ -273,8 +266,6 @@ class OffersAPITestCase(APITestCase):
         url = reverse('single-offer', kwargs={'pk': self.offer.pk})
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-    # === PATCH OFFER TESTS ===
 
     def test_patch_offer_as_creator(self):
         """
@@ -309,8 +300,6 @@ class OffersAPITestCase(APITestCase):
         response = self.client.patch(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    # === DELETE OFFER TESTS ===
-
     def test_delete_offer_as_creator(self):
         """
         Test creator can delete their own offer
@@ -338,8 +327,6 @@ class OffersAPITestCase(APITestCase):
         url = reverse('single-offer', kwargs={'pk': self.offer.pk})
         response = self.client.delete(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-    # === OFFER DETAIL TESTS ===
 
     def test_get_single_offer_detail_authenticated(self):
         """
