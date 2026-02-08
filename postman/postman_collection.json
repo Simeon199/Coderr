@@ -20,7 +20,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"username\": \"max_mustermann\",\r\n    \"email\": \"max.mustermann@testmail.com\",\r\n    \"password\": \"Hallo123?\",\r\n    \"repeated_password\": \"Hallo123?\",\r\n    \"type\": \"customer\"\r\n}",
+              "raw": "{\r\n    \"username\": \"maria_mustermann\",\r\n    \"email\": \"maria.mustermann@testmail.com\",\r\n    \"password\": \"Hallo123?\",\r\n    \"repeated_password\": \"Hallo123?\",\r\n    \"type\": \"customer\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -51,7 +51,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"username\": \"john_travolta\",\r\n    \"password\": \"Hallo123?\"\r\n}",
+              "raw": "{\r\n    \"username\": \"max_mustermann\",\r\n    \"password\": \"Hallo123?\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -173,14 +173,14 @@
               }
             },
             "url": {
-              "raw": "{{BASE_URL}}/api/profile/3/",
+              "raw": "{{BASE_URL}}/api/profile/4/",
               "host": [
                 "{{BASE_URL}}"
               ],
               "path": [
                 "api",
                 "profile",
-                "3",
+                "4",
                 ""
               ]
             }
@@ -200,7 +200,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Token {{MAX_MUSTERMANN_CUSTOMER}}",
+                "value": "Token {{JOHN_DOE_BUSINESS}}",
                 "type": "text"
               }
             ],
@@ -214,14 +214,14 @@
               }
             },
             "url": {
-              "raw": "{{BASE_URL}}/api/profile/3/",
+              "raw": "{{BASE_URL}}/api/profile/4/",
               "host": [
                 "{{BASE_URL}}"
               ],
               "path": [
                 "api",
                 "profile",
-                "3",
+                "4",
                 ""
               ]
             }
@@ -249,7 +249,7 @@
               }
             ],
             "url": {
-              "raw": "{{BASE_URL}}/api/offers/",
+              "raw": "{{BASE_URL}}/api/offers/?page=1",
               "host": [
                 "{{BASE_URL}}"
               ],
@@ -257,6 +257,12 @@
                 "api",
                 "offers",
                 ""
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                }
               ]
             }
           },
@@ -272,7 +278,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "TOKEN {{TARANTINO_BUSINESS_TOKEN}}",
+                "value": "TOKEN {{JOHN_DOE_BUSINESS}}",
                 "type": "text"
               }
             ],
@@ -309,7 +315,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "TOKEN {{TARANTINO_BUSINESS_TOKEN}}",
+                "value": "TOKEN {{JOHN_DOE_BUSINESS}}",
                 "type": "text"
               }
             ],
@@ -347,7 +353,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "TOKEN {{NICK_NOLTE_BUSINESS_TOKEN}}",
+                "value": "TOKEN {{JOHN_DOE_BUSINESS}}",
                 "type": "text"
               }
             ],
@@ -361,14 +367,14 @@
               }
             },
             "url": {
-              "raw": "{{BASE_URL}}/api/offers/6/",
+              "raw": "{{BASE_URL}}/api/offers/2/",
               "host": [
                 "{{BASE_URL}}"
               ],
               "path": [
                 "api",
                 "offers",
-                "6",
+                "2",
                 ""
               ]
             }
@@ -410,6 +416,35 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "SingleOffer",
+          "request": {
+            "auth": {
+              "type": "apikey"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Token {{MAX_MUSTERMANN_CUSTOMER}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/offers/1/",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "offers",
+                "1",
+                ""
+              ]
+            }
+          },
+          "response": []
         }
       ]
     },
@@ -429,7 +464,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "TOKEN {{JOHN_DOE_BUSINESS}}",
+                "value": "TOKEN {{JANE_DOE_CUSTOMER}}",
                 "type": "text"
               }
             ],
@@ -461,13 +496,13 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "TOKEN {{TARANTINO_BUSINESS_TOKEN}}",
+                "value": "TOKEN {{MAX_MUSTERMANN_CUSTOMER}}",
                 "type": "text"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n  \"offer_detail_id\": 27\r\n}",
+              "raw": "{\r\n  \"offer_detail_id\": 1\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -498,7 +533,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "TOKEN {{TRAVOLTA_CUSTOMER_TOKEN}}",
+                "value": "TOKEN {{JOHN_DOE_BUSINESS}}",
                 "type": "text"
               }
             ],
@@ -512,14 +547,14 @@
               }
             },
             "url": {
-              "raw": "{{BASE_URL}}/api/orders/3/",
+              "raw": "{{BASE_URL}}/api/orders/1/",
               "host": [
                 "{{BASE_URL}}"
               ],
               "path": [
                 "api",
                 "orders",
-                "3",
+                "1",
                 ""
               ]
             }
@@ -536,7 +571,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "TOKEN {{TRAVOLTA_CUSTOMER_TOKEN}}",
+                "value": "TOKEN {{MAX_MUSTERMANN_CUSTOMER}}",
                 "type": "text"
               }
             ],
@@ -550,14 +585,14 @@
               }
             },
             "url": {
-              "raw": "{{BASE_URL}}/api/orders/4/",
+              "raw": "{{BASE_URL}}/api/orders/1/",
               "host": [
                 "{{BASE_URL}}"
               ],
               "path": [
                 "api",
                 "orders",
-                "4",
+                "1",
                 ""
               ]
             }
@@ -577,7 +612,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "TOKEN {{TARANTINO_BUSINESS_TOKEN}}",
+                "value": "TOKEN {{JOHN_DOE_BUSINESS}}",
                 "type": "text"
               }
             ],
@@ -586,14 +621,14 @@
               "raw": ""
             },
             "url": {
-              "raw": "{{BASE_URL}}/api/order-count/3000/",
+              "raw": "{{BASE_URL}}/api/order-count/4/",
               "host": [
                 "{{BASE_URL}}"
               ],
               "path": [
                 "api",
                 "order-count",
-                "3000",
+                "4",
                 ""
               ]
             }
@@ -613,7 +648,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "TOKEN {{TARANTINO_BUSINESS_TOKEN}}",
+                "value": "TOKEN {{JOHN_DOE_BUSINESS}}",
                 "type": "text"
               }
             ],
@@ -622,14 +657,14 @@
               "raw": ""
             },
             "url": {
-              "raw": "{{BASE_URL}}/api/completed-order-count/3/",
+              "raw": "{{BASE_URL}}/api/completed-order-count/4/",
               "host": [
                 "{{BASE_URL}}"
               ],
               "path": [
                 "api",
                 "completed-order-count",
-                "3",
+                "4",
                 ""
               ]
             }
@@ -686,13 +721,13 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "TOKEN {{MAX_MUSTERMANN_CUSTOMER}}",
+                "value": "TOKEN {{MARIA_MUSTERMANN_CUSTOMER}}",
                 "type": "text"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n  \"business_user\": 3,\r\n  \"rating\": \"3\",\r\n  \"description\": \"Alles war super!\"\r\n}",
+              "raw": "{\r\n  \"business_user\": 4,\r\n  \"rating\": 5,\r\n  \"description\": \"Alles war super!\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -723,51 +758,13 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "TOKEN {{TRAVOLTA_CUSTOMER_TOKEN}}",
+                "value": "TOKEN {{MAX_MUSTERMANN_CUSTOMER}}",
                 "type": "text"
               }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\r\n  \"rating\": 4,\r\n  \"description\": \"Sehr viel besser als erwartet!\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{BASE_URL}}/api/reviews/2/",
-              "host": [
-                "{{BASE_URL}}"
-              ],
-              "path": [
-                "api",
-                "reviews",
-                "2",
-                ""
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Review",
-          "request": {
-            "auth": {
-              "type": "apikey"
-            },
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "TOKEN {{TRAVOLTA_CUSTOMER_TOKEN}}",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "",
               "options": {
                 "raw": {
                   "language": "json"
@@ -788,6 +785,44 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "Review",
+          "request": {
+            "auth": {
+              "type": "apikey"
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "TOKEN {{MARIA_MUSTERMANN_CUSTOMER}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/reviews/3/",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "reviews",
+                "3",
+                ""
+              ]
+            }
+          },
+          "response": []
         }
       ]
     },
@@ -801,13 +836,7 @@
               "type": "apikey"
             },
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Token {{TARANTINO_BUSINESS_TOKEN}}",
-                "type": "text"
-              }
-            ],
+            "header": [],
             "url": {
               "raw": "{{BASE_URL}}/api/base-info/",
               "host": [

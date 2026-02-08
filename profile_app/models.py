@@ -2,7 +2,10 @@ from django.db import models
 from django.conf import settings
 
 class CustomerProfile(models.Model):
-    """Lightweight profile for customers - links to CustomUser"""
+    """
+    Lightweight profile for customers - links to CustomUser.
+    """
+
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -13,7 +16,10 @@ class CustomerProfile(models.Model):
         return f"{self.user.username}"
 
 class BusinessProfile(models.Model):
-    """Business-specific profile with additional fields"""
+    """
+    Business-specific profile with additional fields.
+    """
+    
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,

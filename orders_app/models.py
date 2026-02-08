@@ -3,12 +3,20 @@ from profile_app.models import CustomerProfile, BusinessProfile
 from offers_app.models import Offer, OfferDetail
 
 class OrderFeatures(models.Model):
+    """
+    Represents a single feature included in an order.
+    """
+
     feature = models.CharField(max_length=255)
 
     def __str__(self):
         return f"{self.feature}"
 
 class Order(models.Model):
+    """
+    Represents an order placed by a customer for a specific offer detail.
+    """
+    
     customer_user = models.ForeignKey(
         CustomerProfile, 
         on_delete=models.CASCADE, 

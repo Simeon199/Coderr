@@ -2,6 +2,9 @@ from django.db import models
 from auth_app.models import CustomUser
 
 class UserDetails(models.Model):
+    """
+    Stores denormalized user details for display within offers.
+    """
     user = models.OneToOneField(
         CustomUser, 
         on_delete=models.CASCADE, 
@@ -17,6 +20,9 @@ class UserDetails(models.Model):
         return f"{self.first_name} {self.last_name}"
     
 class Offer(models.Model):
+    """
+    Represents a service offer created by a business user.
+    """
     user = models.ForeignKey(
         CustomUser, 
         on_delete=models.CASCADE, 
@@ -36,6 +42,9 @@ class Offer(models.Model):
         return self.title
     
 class OfferDetail(models.Model):
+    """
+    Represents a pricing tier (basic, standard, premium) for an offer.
+    """
     offer = models.ForeignKey(
         Offer, 
         on_delete=models.CASCADE, 
@@ -58,5 +67,7 @@ class OfferDetail(models.Model):
     
     @property
     def user(self):
-        """Get the user from the parent Offer"""
+        """
+        Get the user from the parent Offer.
+        """
         return self.offer.user

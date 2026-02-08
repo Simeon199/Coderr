@@ -3,6 +3,10 @@ from auth_app.models import CustomUser
 from profile_app.models import CustomerProfile, BusinessProfile
 
 class Review(models.Model):
+    """
+    Represents a customer's review and rating for a business profile.
+    """
+    
     business_user = models.ForeignKey(
         BusinessProfile,
         on_delete=models.CASCADE,
