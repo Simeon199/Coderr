@@ -148,51 +148,29 @@ class SingleOfferSerializer(serializers.ModelSerializer):
     """
 
     details = OfferDetailListSerializer(source='offer_details', many=True, read_only=True)
-    user_details = UserDetailsSerializer(source='user', read_only=True)
 
     class Meta:
         model = Offer
         fields = [
-            'id', 
+            'id',
             'user',
-            'title', 
-            'image', 
-            'description', 
-            'created_at', 
-            'updated_at', 
-            'details', 
-            'min_price', 
-            'min_delivery_time', 
-            'user_details'
-        ] 
-        read_only_fields = [
-            'id', 
-            'created_at', 
-            'updated_at', 
-            'min_price', 
-            'min_delivery_time', 
-            'details', 
-            'user_details'
+            'title',
+            'image',
+            'description',
+            'created_at',
+            'updated_at',
+            'details',
+            'min_price',
+            'min_delivery_time'
         ]
-
-    def get_user_details(self, obj):
-        """
-        Return first_name, last_name and username for the offer's user,
-        or None if no user is associated.
-        """
-        if obj.user:
-            if obj.user.type == 'business':
-                profile = obj.user.business_profile
-            elif obj.user.type == 'customer':
-                profile = obj.user.customer_profile
-            else:
-                return None
-            return {
-                'first_name': profile.first_name,
-                'last_name': profile.last_name,
-                'username': obj.user.username
-            }
-        return None
+        read_only_fields = [
+            'id',
+            'created_at',
+            'updated_at',
+            'min_price',
+            'min_delivery_time',
+            'details'
+        ]
 
 class SingleOfferUpdateSerializer(serializers.ModelSerializer):
     """
@@ -222,12 +200,16 @@ class SingleOfferUpdateSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         """
-        Use SingleOfferSerializer for output, excluding user, min_price and min_delivery_time.
+        Use SingleOfferSerializer for output, excluding user, min_price, min_delivery_time,
+        created_at and updated_at. Details are shown with full fields including offer_type.
         """
         representation = SingleOfferSerializer(instance).data
         representation.pop('user', None)
         representation.pop('min_price', None)
         representation.pop('min_delivery_time', None)
+        representation.pop('created_at', None)
+        representation.pop('updated_at', None)
+        representation['details'] = OfferDetailCreateSerializer(instance.offer_details.all(), many=True).data
         return representation
 
     def _update_offer_fields(self, instance, validated_data):

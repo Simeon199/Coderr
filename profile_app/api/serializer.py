@@ -89,6 +89,7 @@ class BusinessProfileUpdateSerializer(serializers.ModelSerializer):
         Extract and apply user-level fields (first_name, last_name, file)
         from validated data to the related user instance.
         """
+
         validated_user = validated_data.get("user", {})
         for field in ["first_name", "last_name", "file"]:
             if field in validated_user:
@@ -100,6 +101,7 @@ class BusinessProfileUpdateSerializer(serializers.ModelSerializer):
         Extract and apply business-level fields from validated data
         to the profile instance.
         """
+
         for field in ["location", "tel", "description", "working_hours"]:
             if field in validated_data:
                 setattr(instance, field, validated_data[field])
@@ -109,6 +111,7 @@ class BusinessProfileUpdateSerializer(serializers.ModelSerializer):
         """
         Update both user-level and business-level fields for the profile.
         """
+        
         self._update_user_fields(instance, validated_data)
         self._update_business_fields(instance, validated_data)
         return instance
@@ -140,13 +143,13 @@ class BusinessProfileDetailSerializer(serializers.ModelSerializer):
             "username",
             "first_name",
             "last_name",
-            "email",
             "file",
             "location",
             "tel",
             "description",
             "working_hours",
             "type",
+            "email",
             "created_at"
         ]
         read_only_fields = fields

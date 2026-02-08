@@ -8,11 +8,11 @@ from .permissions import IsBusinessUser, SingleOfferPermission, SingleOfferDetai
 
 class CustomPageNumberPagination(PageNumberPagination):
     """
-    Custom pagination with a default page size of 10.
+    Custom pagination with a default page size of 6.
     Allows clients to override page size via the 'page_size' query parameter.
     """
 
-    page_size = 10
+    page_size = 6
     page_size_query_param = 'page_size'
 
 

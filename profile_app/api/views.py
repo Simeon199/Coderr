@@ -62,6 +62,7 @@ class ProfileView(APIView):
         Retrieve the profile instance for the given user.
         Returns a BusinessProfile or CustomerProfile based on user type.
         """
+        
         if user_obj.type == 'business':
             return get_object_or_404(BusinessProfile, user=user_obj)
         return get_object_or_404(CustomerProfile, user=user_obj)
@@ -70,6 +71,7 @@ class ProfileView(APIView):
         """
         Return the appropriate detail serializer for the given profile.
         """
+
         if user_obj.type == 'business':
             return BusinessProfileDetailSerializer(profile)
         return CustomerProfileDetailSerializer(profile)
@@ -78,6 +80,7 @@ class ProfileView(APIView):
         """
         Return the appropriate update serializer for the given profile.
         """
+
         if user_obj.type == 'business':
             return BusinessProfileUpdateSerializer(profile, data=data, partial=True)
         return CustomerProfileUpdateSerializer(profile, data=data, partial=True)
@@ -86,6 +89,7 @@ class ProfileView(APIView):
         """
         Retrieve a specific profile by user ID.
         """
+
         user_obj = get_object_or_404(CustomUser, pk=user)
         profile = self._get_profile(user_obj)
         serializer = self._get_detail_serializer(user_obj, profile)
@@ -96,6 +100,7 @@ class ProfileView(APIView):
         Update the profile for the given user ID.
         Only the profile owner is allowed to update.
         """
+
         user_obj = get_object_or_404(CustomUser, pk=user)
         if request.user.id != user_obj.id:
             return Response({'detail': 'You do not have permission to update this profile.'}, status=status.HTTP_403_FORBIDDEN)
