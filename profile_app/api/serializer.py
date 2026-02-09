@@ -80,6 +80,7 @@ class BusinessProfileUpdateSerializer(serializers.ModelSerializer):
 
     first_name = serializers.CharField(source="user.first_name", required=False)
     last_name = serializers.CharField(source="user.last_name", required=False)
+    email = serializers.EmailField(source="user.email", required=False)
     file = serializers.FileField(required=False, allow_null=True)
     location = serializers.CharField(required=False)
     tel = serializers.CharField(required=False)
@@ -91,6 +92,7 @@ class BusinessProfileUpdateSerializer(serializers.ModelSerializer):
         fields = [
             "first_name",
             "last_name",
+            "email",
             "file",
             "location",
             "tel",
@@ -105,7 +107,7 @@ class BusinessProfileUpdateSerializer(serializers.ModelSerializer):
         """
 
         validated_user = validated_data.get("user", {})
-        for field in ["first_name", "last_name"]:
+        for field in ["first_name", "last_name", "email"]:
             if field in validated_user:
                 setattr(instance.user, field, validated_user[field])
 
@@ -186,6 +188,7 @@ class CustomerProfileUpdateSerializer(serializers.ModelSerializer):
 
     first_name = serializers.CharField(source="user.first_name", required=False)
     last_name = serializers.CharField(source="user.last_name", required=False)
+    email = serializers.EmailField(source="user.email", required=False)
     file = serializers.FileField(required=False, allow_null=True)
 
     class Meta:
@@ -193,6 +196,7 @@ class CustomerProfileUpdateSerializer(serializers.ModelSerializer):
         fields = [
             "first_name",
             "last_name",
+            "email",
             "file"
         ]
 
@@ -201,7 +205,7 @@ class CustomerProfileUpdateSerializer(serializers.ModelSerializer):
         Update user-level fields for the customer profile.
         """
         validated_user = validated_data.get("user", {})
-        for field in ["first_name", "last_name"]:
+        for field in ["first_name", "last_name", "email"]:
             if field in validated_user:
                 setattr(instance.user, field, validated_user[field])
 
