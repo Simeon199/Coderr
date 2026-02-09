@@ -26,7 +26,10 @@ class OffersListView(generics.ListCreateAPIView):
     pagination_class = CustomPageNumberPagination
 
     def get_serializer_class(self):
-        """Return OfferCreateSerializer for POST requests, OfferListSerializer otherwise."""
+        """
+        Return OfferCreateSerializer for POST requests, OfferListSerializer otherwise.
+        """
+
         if self.request.method == 'POST':
             return OfferCreateSerializer
         return OfferListSerializer
@@ -35,6 +38,7 @@ class OffersListView(generics.ListCreateAPIView):
         """
         Apply query parameter filters for creator, min price and max delivery time.
         """
+
         creator_id = self.request.query_params.get('creator_id')
         if creator_id is not None and creator_id.strip():
             queryset = queryset.filter(user_id=creator_id)
@@ -50,6 +54,7 @@ class OffersListView(generics.ListCreateAPIView):
         """
         Apply search filter on title and description fields.
         """
+
         search = self.request.query_params.get('search')
         if search:
             queryset = queryset.filter(title__icontains=search) | queryset.filter(description__icontains=search)
@@ -59,6 +64,7 @@ class OffersListView(generics.ListCreateAPIView):
         """
         Return filtered, searched and ordered offer queryset based on query parameters.
         """
+
         queryset = Offer.objects.all()
         queryset = self._apply_filters(queryset)
         queryset = self._apply_search(queryset)
@@ -68,7 +74,10 @@ class OffersListView(generics.ListCreateAPIView):
         return queryset
 
     def perform_create(self, serializer):
-        """Save the new offer with the authenticated user as the creator."""
+        """
+        Save the new offer with the authenticated user as the creator.
+        """
+
         serializer.save(user=self.request.user if self.request.user.is_authenticated else None)
 
 
@@ -96,6 +105,7 @@ class SingleOfferView(generics.RetrieveUpdateDestroyAPIView):
         """
         Update an offer and return the updated data using the same serializer.
         """
+        
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)

@@ -87,6 +87,7 @@ class OfferCreateSerializer(serializers.ModelSerializer):
         """
         Validate that the 'details' list contains at least three items.
         """
+        
         if len(value) < 3:
             raise serializers.ValidationError("At least three offer details are required.")
         return value
@@ -95,6 +96,7 @@ class OfferCreateSerializer(serializers.ModelSerializer):
         """
         Create an offer with nested details and calculate price/delivery aggregates.
         """
+
         details_data = validated_data.pop('offer_details', [])
         uploaded_file = validated_data.pop('image', None)
 
@@ -231,6 +233,7 @@ class SingleOfferUpdateSerializer(serializers.ModelSerializer):
         Use SingleOfferSerializer for output, excluding user, min_price, min_delivery_time,
         created_at and updated_at. Details are shown with full fields including offer_type.
         """
+
         representation = SingleOfferSerializer(instance).data
         representation.pop('user', None)
         representation.pop('min_price', None)
@@ -245,6 +248,7 @@ class SingleOfferUpdateSerializer(serializers.ModelSerializer):
         Update top-level offer fields, excluding nested offer_details.
         Handles file upload for the image field.
         """
+
         uploaded_file = validated_data.pop('image', None)
         if uploaded_file:
             file_upload = FileUpload.objects.create(file=uploaded_file)
@@ -257,18 +261,19 @@ class SingleOfferUpdateSerializer(serializers.ModelSerializer):
 
     def _update_or_create_details(self, instance, details_data):
         """
-        Update existing or create new offer details for the given offer.
+        Update existing offer details matched by offer_type.
+        Only provided fields are updated; others remain unchanged.
         """
         for detail_data in details_data:
-            detail_id = detail_data.get('id')
-            if detail_id:
-                detail = instance.offer_details.get(id=detail_id)
-                for attr, value in detail_data.items():
-                    if attr != 'id':
+            offer_type = detail_data.get('offer_type')
+            if offer_type:
+                try:
+                    detail = instance.offer_details.get(offer_type=offer_type)
+                    for attr, value in detail_data.items():
                         setattr(detail, attr, value)
-                detail.save()
-            else:
-                OfferDetail.objects.create(offer=instance, **detail_data)
+                    detail.save()
+                except OfferDetail.DoesNotExist:
+                    OfferDetail.objects.create(offer=instance, **detail_data)
 
     def _recalculate_aggregates(self, instance):
         """
