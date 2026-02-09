@@ -1,6 +1,17 @@
 from rest_framework import serializers
 from offers_app.models import Offer, OfferDetail
 from profile_app.models import CustomerProfile, BusinessProfile
+from upload_app.models import FileUpload
+
+
+def get_image_url(offer):
+    """
+    Return the file URL for an offer's uploaded image, or None.
+    """
+    
+    if offer.image and offer.image.file:
+        return offer.image.file.url
+    return None
 
 class ProfileUpdateSerializer(serializers.Serializer):
     """
@@ -59,14 +70,15 @@ class OfferCreateSerializer(serializers.ModelSerializer):
     """
 
     details = OfferDetailCreateSerializer(source='offer_details', many=True)
+    image = serializers.FileField(required=False, allow_null=True)
 
     class Meta:
         model = Offer
         fields = [
-            'id', 
-            'title', 
-            'image', 
-            'description', 
+            'id',
+            'title',
+            'image',
+            'description',
             'details'
         ]
         read_only_fields = ['id']
@@ -84,19 +96,25 @@ class OfferCreateSerializer(serializers.ModelSerializer):
         Create an offer with nested details and calculate price/delivery aggregates.
         """
         details_data = validated_data.pop('offer_details', [])
+        uploaded_file = validated_data.pop('image', None)
+
+        if uploaded_file:
+            file_upload = FileUpload.objects.create(file=uploaded_file)
+            validated_data['image'] = file_upload
+
         offer = Offer.objects.create(**validated_data)
-        
+
         for detail_data in details_data:
             features = detail_data.pop('features', [])
             offer_detail = OfferDetail.objects.create(offer=offer, **detail_data)
             offer_detail.features = features
             offer_detail.save()
-        
+
         if offer.offer_details.exists():
             offer.min_price = min((detail.price for detail in offer.offer_details.all() if detail.price), default=None)
             offer.min_delivery_time = min((detail.delivery_time_in_days for detail in offer.offer_details.all() if detail.delivery_time_in_days), default=None)
             offer.save()
-        
+
         return offer
 
 class UserDetailsSerializer(serializers.Serializer):
@@ -115,31 +133,36 @@ class OfferListSerializer(serializers.ModelSerializer):
 
     details = OfferDetailListSerializer(source='offer_details', many=True, read_only=True)
     user_details = UserDetailsSerializer(source='user', read_only=True)
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = Offer
         fields = [
-            'id', 
-            'user', 
-            'title', 
-            'image', 
-            'description', 
-            'created_at', 
-            'updated_at', 
-            'details', 
-            'min_price', 
-            'min_delivery_time', 
+            'id',
+            'user',
+            'title',
+            'image',
+            'description',
+            'created_at',
+            'updated_at',
+            'details',
+            'min_price',
+            'min_delivery_time',
             'user_details'
         ]
         read_only_fields = [
-            'id', 
-            'created_at', 
-            'updated_at', 
-            'min_price', 
-            'min_delivery_time', 
-            'user_details', 
+            'id',
+            'created_at',
+            'updated_at',
+            'min_price',
+            'min_delivery_time',
+            'user_details',
             'details'
         ]
+
+    def get_image(self, obj):
+        """Return the file URL for the offer's image, or None."""
+        return get_image_url(obj)
 
 
 class SingleOfferSerializer(serializers.ModelSerializer):
@@ -148,6 +171,7 @@ class SingleOfferSerializer(serializers.ModelSerializer):
     """
 
     details = OfferDetailListSerializer(source='offer_details', many=True, read_only=True)
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = Offer
@@ -172,6 +196,10 @@ class SingleOfferSerializer(serializers.ModelSerializer):
             'details'
         ]
 
+    def get_image(self, obj):
+        """Return the file URL for the offer's image, or None."""
+        return get_image_url(obj)
+
 class SingleOfferUpdateSerializer(serializers.ModelSerializer):
     """
     Serializer for updating an offer with nested offer details.
@@ -180,21 +208,21 @@ class SingleOfferUpdateSerializer(serializers.ModelSerializer):
 
     details = OfferDetailCreateSerializer(source='offer_details', many=True, required=False)
     user_details = ProfileUpdateSerializer(required=False)
+    image = serializers.FileField(required=False, allow_null=True)
 
     class Meta:
         model = Offer
         fields = [
-            'id', 
-            'title', 
-            'image', 
-            'description', 
-            'details', 
+            'id',
+            'title',
+            'image',
+            'description',
+            'details',
             'user_details'
         ]
         read_only_fields = ['id']
         extra_kwargs = {
             'title': {'required': False},
-            'image': {'required': False},
             'description': {'required': False},
         }
 
@@ -215,7 +243,13 @@ class SingleOfferUpdateSerializer(serializers.ModelSerializer):
     def _update_offer_fields(self, instance, validated_data):
         """
         Update top-level offer fields, excluding nested offer_details.
+        Handles file upload for the image field.
         """
+        uploaded_file = validated_data.pop('image', None)
+        if uploaded_file:
+            file_upload = FileUpload.objects.create(file=uploaded_file)
+            instance.image = file_upload
+
         for attr, value in validated_data.items():
             if attr != 'offer_details':
                 setattr(instance, attr, value)

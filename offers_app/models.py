@@ -1,5 +1,6 @@
 from django.db import models
 from auth_app.models import CustomUser
+from upload_app.models import FileUpload
 
 class UserDetails(models.Model):
     """
@@ -31,7 +32,13 @@ class Offer(models.Model):
         blank=True
     )
     title = models.CharField(max_length=255, null=True, blank=True)
-    image = models.ImageField(upload_to='offers/', null=True, blank=True)
+    image = models.ForeignKey(
+        FileUpload,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='offer'
+    )
     description = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
