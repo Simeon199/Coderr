@@ -22,7 +22,10 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, data):
-        """Ensure passwords match and that username and email are unique."""
+        """
+        Ensure passwords match and that username and email are unique.
+        """
+
         if data['password'] != data['repeated_password']:
             raise serializers.ValidationError({'error': 'Passwords do not match'})
         if CustomUser.objects.filter(email=data['email']).exists():
@@ -32,7 +35,10 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return data
     
     def create(self, validated_data):
-        """Create the user, the matching profile and an auth token."""
+        """
+        Create the user, the matching profile and an auth token.
+        """
+
         validated_data.pop('repeated_password')
         user = CustomUser.objects.create_user(
             username=validated_data['username'],
@@ -87,7 +93,10 @@ class RegistrationResponseSerializer(serializers.ModelSerializer):
         return token.key
     
 def get_file_url(user):
-    """Return the file URL for a user's uploaded file, or None."""
+    """
+    Return the file URL for a user's uploaded file, or None.
+    """
+    
     if user.file and user.file.file:
         return user.file.file.url
     return None

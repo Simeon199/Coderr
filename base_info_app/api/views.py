@@ -7,12 +7,17 @@ from offers_app.models import Offer
 from profile_app.models import BusinessProfile
 
 class BaseInfoView(APIView):
-    """Public endpoint that returns aggregated platform statistics."""
+    """
+    Public endpoint that returns aggregated platform statistics.
+    """
 
     permission_classes = [AllowAny]
 
     def get(self, request):
-        """Return review count, average rating, business profile count and offer count."""
+        """
+        Return review count, average rating, business profile count and offer count.
+        """
+        
         review_count = Review.objects.count()
         average_rating = Review.objects.aggregate(Avg('rating'))['rating__avg'] or 0
         business_profile_count = BusinessProfile.objects.count()

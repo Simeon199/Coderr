@@ -4,7 +4,10 @@ from upload_app.models import FileUpload
 
 
 def get_file_url(user):
-    """Return the file URL for a user's uploaded file, or None."""
+    """
+    Return the file URL for a user's uploaded file, or None.
+    """
+    
     if user.file and user.file.file:
         return user.file.file.url
     return None

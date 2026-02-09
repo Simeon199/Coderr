@@ -7,7 +7,10 @@ class IsUserOfTypeCustomer(permissions.BasePermission):
     """
 
     def has_permission(self, request, view):
-        """Return True if the requesting user is authenticated and a customer."""
+        """
+        Return True if the requesting user is authenticated and a customer.
+        """
+
         user = request.user
         return user.is_authenticated and self._is_customer(user)
     
@@ -52,6 +55,9 @@ class IsAdminOrSuperuser(permissions.BasePermission):
     """
 
     def has_permission(self, request, view):
-        """Return True if the requesting user is authenticated and either staff or superuser."""
+        """
+        Return True if the requesting user is authenticated and either staff or superuser.
+        """
+        
         user = request.user
         return (user.is_authenticated and (getattr(user, "is_superuser", False) or getattr(user, "is_staff", False)))

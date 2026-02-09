@@ -61,6 +61,7 @@ class CustomerListView(generics.ListAPIView):
     View to list all customer profiles.
     Returns customer data in the required format. 
     """
+
     serializer_class = CustomerProfileSerializer
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication]
@@ -71,6 +72,7 @@ class BusinessListView(generics.ListAPIView):
     View to list all business profiles.
     Returns business data in the required format.
     """
+
     serializer_class = BusinessProfileSerializer
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication]
@@ -81,6 +83,7 @@ class UserProfileView(APIView):
     View to get and update user profile.
     Handles both customer and business profiles.
     """
+    
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication]
 
