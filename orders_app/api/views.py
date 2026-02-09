@@ -159,12 +159,14 @@ class InProgressOrderCountView(APIView):
         Return the number of orders with status 'in_progress' for the given business user.
         """
         business_user_id = self.kwargs.get('pk')
-        if not BusinessProfile.objects.filter(user__id=business_user_id).exists():
+        try:
+            business_profile = BusinessProfile.objects.get(user__id=business_user_id)
+        except BusinessProfile.DoesNotExist:
             return Response(
                 {"detail": "Business profile not found."},
                 status=status.HTTP_404_NOT_FOUND
             )
-        order_count = Order.objects.filter(business_user=business_user_id, status='in_progress').count()
+        order_count = Order.objects.filter(business_user=business_profile, status='in_progress').count()
         return Response({"order_count": order_count})
 
 
@@ -180,10 +182,12 @@ class CompletedOrderCountView(APIView):
         Return the number of orders with status 'completed' for the given business user.
         """
         business_user_id = self.kwargs.get('pk')
-        if not BusinessProfile.objects.filter(user__id=business_user_id).exists():
+        try:
+            business_profile = BusinessProfile.objects.get(user__id=business_user_id)
+        except BusinessProfile.DoesNotExist:
             return Response(
                 {"detail": "Business profile not found."},
                 status=status.HTTP_404_NOT_FOUND
             )
-        completed_order_count = Order.objects.filter(business_user=business_user_id, status='completed').count()
+        completed_order_count = Order.objects.filter(business_user=business_profile, status='completed').count()
         return Response({"completed_order_count": completed_order_count})
