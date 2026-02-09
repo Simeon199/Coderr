@@ -53,15 +53,18 @@ class OfferDetailCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = OfferDetail
         fields = [
-            'id', 
-            'title', 
-            'revisions', 
-            'delivery_time_in_days', 
-            'price', 
-            'features', 
+            'id',
+            'title',
+            'revisions',
+            'delivery_time_in_days',
+            'price',
+            'features',
             'offer_type'
         ]
         read_only_fields = ['id']
+        extra_kwargs = {
+            'offer_type': {'required': True},
+        }
 
 class OfferCreateSerializer(serializers.ModelSerializer):
     """
@@ -227,6 +230,17 @@ class SingleOfferUpdateSerializer(serializers.ModelSerializer):
             'title': {'required': False},
             'description': {'required': False},
         }
+
+    def validate(self, attrs):
+        """Ensure each detail entry includes the required 'offer_type' field."""
+        details_data = self.initial_data.get('details')
+        if details_data:
+            for detail in details_data:
+                if 'offer_type' not in detail:
+                    raise serializers.ValidationError(
+                        {"details": ["Each detail entry must include the 'offer_type' field."]}
+                    )
+        return attrs
 
     def to_representation(self, instance):
         """
