@@ -1,5 +1,6 @@
 from offers_app.models import Offer, OfferDetail
 from rest_framework import generics
+from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from .serializers import OfferCreateSerializer, OfferListSerializer, SingleOfferSerializer, SingleOfferUpdateSerializer, SingleOfferDeleteSerializer, SingleOfferDetailSerializer
@@ -47,6 +48,10 @@ class OffersListView(generics.ListCreateAPIView):
             queryset = queryset.filter(min_price__gte=min_price)
         max_delivery_time = self.request.query_params.get('max_delivery_time')
         if max_delivery_time:
+            try:
+                max_delivery_time = int(max_delivery_time)
+            except (ValueError, TypeError):
+                raise ValidationError({"max_delivery_time": "Must be an integer value."})
             queryset = queryset.filter(min_delivery_time__lte=max_delivery_time)
         return queryset
 
