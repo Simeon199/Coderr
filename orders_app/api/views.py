@@ -31,6 +31,8 @@ class OrderListView(generics.ListCreateAPIView):
             return OfferDetail.objects.get(id=offer_detail_id), None
         except OfferDetail.DoesNotExist:
             return None, Response({"error": "Invalid offer_detail_id"}, status=status.HTTP_404_NOT_FOUND)
+        except (ValueError, TypeError):
+            return None, Response({"error": "offer_detail_id must be a valid integer"}, status=status.HTTP_400_BAD_REQUEST)
 
     def _get_customer_profile(self, user):
         """

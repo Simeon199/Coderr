@@ -5,6 +5,13 @@ class SingleOfferPermission(permissions.BasePermission):
     Manage object-level access for individual offers.
     """
 
+    def has_permission(self, request, view):
+        """
+        Ensure the user is authenticated before the object is loaded.
+        """
+        
+        return request.user and request.user.is_authenticated
+
     def has_object_permission(self, request, view, obj):
         """
         Allow safe methods for authenticated users and PATCH/DELETE only for the offer creator.
@@ -23,6 +30,13 @@ class SingleOfferDetailPermission(permissions.BasePermission):
     """
     Manage object-level access for offer details.
     """
+
+    def has_permission(self, request, view):
+        """
+        Ensure the user is authenticated before the object is loaded.
+        """
+
+        return request.user and request.user.is_authenticated
 
     def has_object_permission(self, request, view, obj):
         """
