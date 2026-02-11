@@ -1,7 +1,6 @@
 # Coderr Backend
 
 Coderr is intended to be a small Fiverr clone. It is a backend for a platform for freelance developers, designed as a portfolio project for further training as a backend developer. It builds on an existing frontend and fully supports CRUD operations. The respective frontend repository can be found under the following link:
-
 [Coderr Frontend](https://github.com/Developer-Akademie-Backendkurs/project.Coderr)
 
 ## Table of Contents
