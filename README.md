@@ -6,12 +6,14 @@ Coderr is intended to be a small Fiverr clone. It is a backend for a platform fo
 ## Table of Contents
 
 - [Features](#features)
+- [Project Structure](#project-structure)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Running the Server](#running-the-server)
 - [Creating a Superuser](#creating-a-superuser)
 - [API Testing with Postman](#api-testing-with-postman)
 - [Contributing](#contributing)
+- [License](#license)
 
 ## Features
 
@@ -19,6 +21,50 @@ Coderr is intended to be a small Fiverr clone. It is a backend for a platform fo
 - CRUD for offers, orders and profiles.
 - Review management and provision of basic information about the platform.
 - RESTful API with DRF
+
+## Project Structure
+
+The project follows a modular Django architecture. Each feature domain is encapsulated in its own Django app, all sharing a consistent internal layout.
+
+```
+Coderr/
+├── core/                   # Django project configuration
+│   ├── settings.py         # Global settings
+│   ├── urls.py             # Root URL dispatcher
+│   ├── asgi.py
+│   └── wsgi.py
+│
+├── auth_app/               # Registration and login
+├── profile_app/            # User profiles (business & customer)
+├── offers_app/             # Offers and offer details
+├── orders_app/             # Order management
+├── reviews_app/            # Review system
+├── base_info_app/          # Platform statistics and base info
+├── upload_app/             # Profile image upload
+│
+├── postman/
+│   └── postman_collection.json  # Importable Postman collection
+├── media/                  # Uploaded files (runtime)
+├── manage.py
+├── requirements.txt
+└── pytest.ini
+```
+
+Each app (except `core`) follows the same internal structure:
+
+```
+<app>/
+├── models.py           # Data models
+├── admin.py            # Django admin registration
+├── views.py            # Entry point (delegates to api/)
+├── migrations/         # Database migrations
+├── tests/              # Unit and integration tests
+└── api/
+    ├── serializers.py  # DRF serializers
+    ├── views.py        # API view logic
+    ├── urls.py         # App-level URL patterns
+    └── permissions.py  # Custom permissions (where applicable)
+```
 
 ## Prerequisites
 
@@ -65,3 +111,7 @@ A [Postman Collection](postman/postman_collection.json) is included to help you 
 ## Contributing
 
 Contributions are always welcome! If you have suggestions for improvements or want to propose changes, feel free to open an issue. Alternatively, consider forking the repository and submitting a pull request.
+
+## License
+
+This project is licensed under the MIT License — © 2026 Simon Kiesner.
