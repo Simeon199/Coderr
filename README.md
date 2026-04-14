@@ -79,14 +79,21 @@ ensure you have the following prerequisites:
 1. Clone: `git clone https://github.com/Simeon199/Coderr.git && cd Coderr`
 2. Virtualenv: `python -m venv env && env\Scripts\activate` (Windows)
 3. Install: `pip install -r requirements.txt`
-4. Migrate: `python manage.py makemigrations && python manage.py migrate`
+4. Set environment variables: create a `.env` file in the project root or export the variables manually:
+   ```
+   DJANGO_SECRET_KEY=your-local-secret-key
+   DEBUG=True
+   ALLOWED_HOSTS=127.0.0.1,localhost
+   CORS_ALLOWED_ORIGINS=http://127.0.0.1:8000,http://127.0.0.1:5500
+   ```
+5. Migrate: `python manage.py makemigrations && python manage.py migrate`
 
 ## Running the Server
 
 1. Run: `python manage.py runserver`
 2. Access the API at `http://127.0.0.1:8000/` in your browser or API client.
 
-This launches Django's built-in development server, allowing you to test the API endpoints locallly. Note that this is for development only.
+This launches Django's built-in development server, allowing you to test the API endpoints locally. Note that this is for development only.
 
 ## Creating a Superuser
 
