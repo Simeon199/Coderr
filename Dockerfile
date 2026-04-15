@@ -14,4 +14,4 @@ RUN python manage.py collectstatic --noinput || true
 
 EXPOSE 8080
 
-CMD python manage.py migrate --noinput && gunicorn core.wsgi:application --bind 0.0.0.0:8080 --workers 2
+CMD python manage.py migrate --noinput && chmod 777 db.sqlite3 || true && gunicorn core.wsgi:application --bind 0.0.0.0:8080 --workers 1
