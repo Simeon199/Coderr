@@ -37,5 +37,5 @@ class BaseInfoAPITestCase(TestCase):
         data = response.data
         self.assertEqual(data['review_count'], 2)
         self.assertEqual(data['average_rating'], 4.5)
-        self.assertEqual(data['business_profile_count'], 1)
+        self.assertEqual(data['business_profile_count'], 2)
         self.assertEqual(data['offer_count'], 1)

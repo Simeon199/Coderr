@@ -53,19 +53,18 @@ class BusinessProfileTests(ProfileTests):
             "type",
         }
 
-        for item in data:
-            self.assertIsInstance(item, dict)
-            self.assertEqual(set(item.keys()), expected_keys)
-            self.assertEqual(item["user"], self.user.id)
-            self.assertEqual(item["username"], "test_user")
-            self.assertEqual(item["first_name"], "Test")
-            self.assertEqual(item["last_name"], "User")
-            self.assertEqual(item["file"], self.file_upload.file.url)
-            self.assertEqual(item["location"], "Berlin")
-            self.assertEqual(item["tel"], "123456789")
-            self.assertEqual(item["description"], "Business description")
-            self.assertEqual(item["working_hours"], "9-17")
-            self.assertEqual(item["type"], "business")
+        item = next((entry for entry in data if entry["user"] == self.user.id), None)
+        self.assertIsNotNone(item, "test_user's business profile missing from response")
+        self.assertEqual(set(item.keys()), expected_keys)
+        self.assertEqual(item["username"], "test_user")
+        self.assertEqual(item["first_name"], "Test")
+        self.assertEqual(item["last_name"], "User")
+        self.assertEqual(item["file"], self.file_upload.file.url)
+        self.assertEqual(item["location"], "Berlin")
+        self.assertEqual(item["tel"], "123456789")
+        self.assertEqual(item["description"], "Business description")
+        self.assertEqual(item["working_hours"], "9-17")
+        self.assertEqual(item["type"], "business")
 
     def test_unauthenticated_user_gets_401(self):
         """

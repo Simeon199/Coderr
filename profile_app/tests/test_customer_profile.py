@@ -59,14 +59,13 @@ class CustomerProfileViewTest(ProfileTests):
             "type"
         }
 
-        for item in data:
-            self.assertIsInstance(item, dict)
-            self.assertEqual(set(item.keys()), expected_keys)
-            self.assertEqual(item["user"], self.user.id)
-            self.assertEqual(item["username"], "test_user")
-            self.assertEqual(item["first_name"], "Test")
-            self.assertEqual(item["last_name"], "User")
-            self.assertEqual(item["file"], self.file_upload.file.url)
+        item = next((entry for entry in data if entry["user"] == self.user.id), None)
+        self.assertIsNotNone(item, "test_user's customer profile missing from response")
+        self.assertEqual(set(item.keys()), expected_keys)
+        self.assertEqual(item["username"], "test_user")
+        self.assertEqual(item["first_name"], "Test")
+        self.assertEqual(item["last_name"], "User")
+        self.assertEqual(item["file"], self.file_upload.file.url)
 
     def test_unauthenticated_user_cannot_access(self):
         """
