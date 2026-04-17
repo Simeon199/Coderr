@@ -143,13 +143,25 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL')
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 if CLOUDINARY_URL:
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-    CLOUDINARY_STORAGE = {'CLOUDINARY_URL': CLOUDINARY_URL}
-    MEDIA_URL = '/media/'
-else:
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-    MEDIA_URL = '/media/'
+    import cloudinary
+    cloudinary.config(cloudinary_url=CLOUDINARY_URL)
+    CLOUDINARY_STORAGE = {
+        'CLOUD_NAME': cloudinary.config().cloud_name,
+        'API_KEY': cloudinary.config().api_key,
+        'API_SECRET': cloudinary.config().api_secret,
+    }
+    STORAGES = {
+        'default': {
+            'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage',
+        },
+        'staticfiles': {
+            'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+        },
+    }
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
