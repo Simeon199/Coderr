@@ -3,13 +3,16 @@ from profile_app.models import BusinessProfile, CustomerProfile
 from upload_app.models import FileUpload
 
 
-def get_file_url(user):
+def get_file_url(user, request=None):
     """
-    Return the file URL for a user's uploaded file, or None.
+    Return the absolute file URL for a user's uploaded file, or None.
     """
-    
+
     if user.file and user.file.file:
-        return user.file.file.url
+        url = user.file.file.url
+        if request:
+            return request.build_absolute_uri(url)
+        return url
     return None
 
 
@@ -39,7 +42,7 @@ class CustomerSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
     def get_file(self, obj):
-        return get_file_url(obj.user)
+        return get_file_url(obj.user, self.context.get('request'))
 
 
 class BusinessSerializer(serializers.ModelSerializer):
@@ -72,7 +75,7 @@ class BusinessSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
     def get_file(self, obj):
-        return get_file_url(obj.user)
+        return get_file_url(obj.user, self.context.get('request'))
 
 
 class BusinessProfileUpdateSerializer(serializers.ModelSerializer):
@@ -180,7 +183,7 @@ class BusinessProfileDetailSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
     def get_file(self, obj):
-        return get_file_url(obj.user)
+        return get_file_url(obj.user, self.context.get('request'))
 
 
 class CustomerProfileUpdateSerializer(serializers.ModelSerializer):
@@ -251,4 +254,4 @@ class CustomerProfileDetailSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
     def get_file(self, obj):
-        return get_file_url(obj.user)
+        return get_file_url(obj.user, self.context.get('request'))
