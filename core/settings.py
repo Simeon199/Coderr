@@ -177,7 +177,11 @@ REST_FRAMEWORK = {
     ]
 }
 
-CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://127.0.0.1:8000,http://127.0.0.1:5500').split(',')
+_cors_origins = ['http://127.0.0.1:8000', 'http://127.0.0.1:5500']
+_frontend_url = os.environ.get('FRONTEND_URL', '')
+if _frontend_url:
+    _cors_origins.append(_frontend_url)
+CORS_ALLOWED_ORIGINS = _cors_origins
 
 # Custom User Model
 AUTH_USER_MODEL = 'auth_app.CustomUser'

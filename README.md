@@ -100,7 +100,6 @@ The project reads all configuration from environment variables. For local develo
 | `DJANGO_SECRET_KEY` | Django secret key | `django-insecure-...` |
 | `DEBUG` | Enable debug mode | `True` |
 | `ALLOWED_HOSTS` | Comma-separated allowed hosts | `127.0.0.1,localhost` |
-| `CORS_ALLOWED_ORIGINS` | Comma-separated CORS origins | `http://127.0.0.1:5500` |
 
 ### Optional — required only for production parity
 
@@ -108,6 +107,7 @@ The project reads all configuration from environment variables. For local develo
 |---|---|---|
 | `DATABASE_URL` | PostgreSQL connection string (e.g. Neon) | SQLite (`db.sqlite3`) |
 | `CLOUDINARY_URL` | Cloudinary connection string | Local filesystem (`media/`) |
+| `FRONTEND_URL` | Public frontend origin for CORS | `http://127.0.0.1:5500` and `http://127.0.0.1:8000` are always allowed |
 
 **Without `DATABASE_URL`**, the project uses SQLite automatically — no setup needed for local testing.
 
@@ -119,7 +119,6 @@ The project reads all configuration from environment variables. For local develo
 DJANGO_SECRET_KEY=any-local-secret-key
 DEBUG=True
 ALLOWED_HOSTS=127.0.0.1,localhost
-CORS_ALLOWED_ORIGINS=http://127.0.0.1:5500
 ```
 
 To load a `.env` file automatically, install python-dotenv and add the following to `manage.py` before `execute_from_command_line`:
