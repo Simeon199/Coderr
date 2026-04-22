@@ -50,8 +50,6 @@ Coderr/
 ├── .github/
 │   └── workflows/
 │       └── deploy.yml      # CI/CD: tests + Cloud Run deployment
-├── postman/
-│   └── postman_collection.json  # Importable Postman collection
 ├── media/                  # Uploaded files (local development only)
 ├── Dockerfile
 ├── .dockerignore
@@ -79,7 +77,6 @@ Each app (except `core`) follows the same internal structure:
 ## Prerequisites
 
 - Python 3.12 or higher
-- [Postman](https://www.postman.com/downloads/) (optional, for easy API testing)
 
 ## Installation
 
@@ -142,16 +139,6 @@ To access admin features or perform administrative tasks, create a superuser acc
 1. Run `python manage.py createsuperuser`
 2. Follow the prompts to enter a username, email, and password.
 3. Use the superuser credentials to log in via the Django admin panel at `http://127.0.0.1:8000/admin/`.
-
-## API Testing with Postman
-
-A [Postman Collection](postman/postman_collection.json) is included to help you test the API endpoints.
-
-**How to use:**
-
-1. Install Postman and import the collection from `postman/postman_collection.json`.
-2. Set the base URL to `http://127.0.0.1:8000/` and adjust further environment variables if necessary.
-3. Use the requests to test and explore API features.
 
 ## Deployment
 
