@@ -14,7 +14,6 @@ Coderr is intended to be a small Fiverr clone. It is a backend for a platform fo
 - [Environment Variables](#environment-variables)
 - [Running the Server](#running-the-server)
 - [Creating a Superuser](#creating-a-superuser)
-- [API Testing with Postman](#api-testing-with-postman)
 - [Deployment](#deployment)
 - [Contributing](#contributing)
 - [License](#license)
