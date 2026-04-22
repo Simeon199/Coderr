@@ -125,13 +125,6 @@ DEBUG=True
 ALLOWED_HOSTS=127.0.0.1,localhost
 ```
 
-To load a `.env` file automatically, install python-dotenv and add the following to `manage.py` before `execute_from_command_line`:
-
-```python
-from dotenv import load_dotenv
-load_dotenv()
-```
-
 ## Running the Server
 
 1. Run: `python manage.py runserver`
