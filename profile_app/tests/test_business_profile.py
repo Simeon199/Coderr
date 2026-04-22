@@ -59,7 +59,7 @@ class BusinessProfileTests(ProfileTests):
         self.assertEqual(item["username"], "test_user")
         self.assertEqual(item["first_name"], "Test")
         self.assertEqual(item["last_name"], "User")
-        self.assertEqual(item["file"], self.file_upload.file.url)
+        self.assertEqual(item["file"], f"http://testserver{self.file_upload.file.url}")
         self.assertEqual(item["location"], "Berlin")
         self.assertEqual(item["tel"], "123456789")
         self.assertEqual(item["description"], "Business description")

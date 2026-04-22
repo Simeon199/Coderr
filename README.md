@@ -112,8 +112,16 @@ The project reads all configuration from environment variables. For local develo
 
 ### Minimal `.env` for local development
 
+Generate a secure secret key with the following command:
+
+```bash
+python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
 ```
-DJANGO_SECRET_KEY=any-local-secret-key
+
+Copy the output and paste it as the value for `DJANGO_SECRET_KEY` in your `.env` file:
+
+```
+DJANGO_SECRET_KEY=<paste-generated-key-here>
 DEBUG=True
 ALLOWED_HOSTS=127.0.0.1,localhost
 ```

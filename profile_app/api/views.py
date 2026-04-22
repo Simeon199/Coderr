@@ -67,14 +67,15 @@ class ProfileView(APIView):
             return get_object_or_404(BusinessProfile, user=user_obj)
         return get_object_or_404(CustomerProfile, user=user_obj)
 
-    def _get_detail_serializer(self, user_obj, profile):
+    def _get_detail_serializer(self, user_obj, profile, request=None):
         """
         Return the appropriate detail serializer for the given profile.
         """
 
+        context = {'request': request}
         if user_obj.type == 'business':
-            return BusinessProfileDetailSerializer(profile)
-        return CustomerProfileDetailSerializer(profile)
+            return BusinessProfileDetailSerializer(profile, context=context)
+        return CustomerProfileDetailSerializer(profile, context=context)
 
     def _get_update_serializer(self, user_obj, profile, data):
         """
@@ -92,7 +93,7 @@ class ProfileView(APIView):
 
         user_obj = get_object_or_404(CustomUser, pk=user)
         profile = self._get_profile(user_obj)
-        serializer = self._get_detail_serializer(user_obj, profile)
+        serializer = self._get_detail_serializer(user_obj, profile, request)
         return Response(serializer.data)
 
     def patch(self, request, user=None):
@@ -109,7 +110,7 @@ class ProfileView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         serializer.save()
-        detail_serializer = self._get_detail_serializer(user_obj, profile)
+        detail_serializer = self._get_detail_serializer(user_obj, profile, request)
         return Response(detail_serializer.data)
 
 
