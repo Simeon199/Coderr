@@ -3,7 +3,7 @@
 Coderr is intended to be a small Fiverr clone. It is a backend for a platform for freelance developers, designed as a portfolio project for further training as a backend developer. It builds on an existing frontend and fully supports CRUD operations. The respective frontend repository can be found under the following link:
 [Coderr Frontend](https://github.com/Developer-Akademie-Backendkurs/project.Coderr)
 
-**Live API:** https://coderr-sk-2026-633433832477.europe-west1.run.app
+**Live API:** Currently offline — see [Deployment](#deployment) for instructions on how to bring it back up.
 
 ## Table of Contents
 
@@ -150,7 +150,16 @@ The project is deployed on **Google Cloud Run** via a Docker container. Deployme
 - File storage: [Cloudinary](https://cloudinary.com) (free tier)
 - CI/CD: GitHub Actions (`.github/workflows/deploy.yml`)
 
-**Pipeline:** Every push to `main` triggers the workflow — tests run first, and on success the container is built and deployed to Cloud Run automatically.
+**Current status:** The Cloud Run service is currently offline. All configuration is preserved and the project can be redeployed at any time without code changes.
+
+**Pipeline:** Deployment is triggered manually via GitHub Actions UI (*Actions → Deploy to Cloud Run → Run workflow*). Tests run first, and on success the container is built and deployed to Cloud Run automatically. To re-enable automatic deployment on every push to `main`, change the `on:` trigger in `.github/workflows/deploy.yml` from `workflow_dispatch` back to:
+
+```yaml
+on:
+  push:
+    branches:
+      - main
+```
 
 **Required GitHub Secrets** for the pipeline to work:
 
