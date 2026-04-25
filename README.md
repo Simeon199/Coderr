@@ -83,7 +83,7 @@ Each app (except `core`) follows the same internal structure:
 2. Virtualenv: `python -m venv env && env\Scripts\activate` (Windows)
 3. Install: `pip install -r requirements.txt`
 4. Configure environment variables (see [Environment Variables](#environment-variables))
-5. Migrate: `python manage.py migrate`
+5. Migrate: `python manage.py makemigrations` && `python manage.py migrate`
 
 ## Environment Variables
 
