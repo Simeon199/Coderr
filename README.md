@@ -161,6 +161,17 @@ on:
       - main
 ```
 
+**Configuration before first deployment** — replace the following placeholders in `.github/workflows/deploy.yml`:
+
+| Placeholder | Replace with |
+|---|---|
+| `your-cloud-run-service-name` | Your Cloud Run service name (e.g. `coderr-sk-2026`) |
+| `your-gcp-region` | Your GCP region (e.g. `europe-west1`) |
+| `your-cloud-run-url` | The URL assigned to your Cloud Run service after first deployment |
+| `https://your-frontend-url` | The public URL of your deployed frontend (appears twice) |
+
+> **Note:** `your-cloud-run-url` is only known after the first deployment. For the very first run, set `ALLOWED_HOSTS=*` as a temporary value, retrieve the assigned URL from the Cloud Run dashboard, then update the placeholder and redeploy.
+
 **Required GitHub Secrets** for the pipeline to work:
 
 | Secret | Description |
